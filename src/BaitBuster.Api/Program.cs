@@ -1,10 +1,13 @@
+using System.Text.Json.Serialization;
 using BaitBuster.Core.Detection;
 using BaitBuster.Core.Detection.Rules;
 using BaitBuster.Core.Parsing;
+using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(o => o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 builder.Services.AddOpenApi();
 
 // Ядро на анализа
@@ -26,6 +29,7 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    app.MapScalarApiReference();
 }
 
 app.UseCors("angular");

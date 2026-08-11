@@ -1,0 +1,124 @@
+:host {
+  display: block;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  color: #1a1a1a;
+}
+
+.page {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+h1 {
+  margin-bottom: 0.25rem;
+}
+
+.subtitle {
+  color: #666;
+  margin-top: 0;
+}
+
+.upload-box {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 1rem;
+  border: 1px dashed #bbb;
+  border-radius: 8px;
+  margin: 1.5rem 0;
+}
+
+button {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 6px;
+  background: #2563eb;
+  color: white;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+button:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
+
+.error {
+  color: #b91c1c;
+  font-weight: 600;
+}
+
+.verdict {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border-radius: 8px;
+  color: white;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.verdict-legitimate { background: #16a34a; }
+.verdict-suspicious { background: #d97706; }
+.verdict-phishing { background: #dc2626; }
+
+.meta {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.25rem 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.meta dt { font-weight: 600; color: #555; }
+.meta dd { margin: 0; }
+
+.no-findings {
+  color: #16a34a;
+  font-weight: 600;
+}
+
+.findings {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.finding {
+  border-left: 4px solid #999;
+  background: #f9fafb;
+  padding: 0.75rem 1rem;
+  border-radius: 4px;
+}
+
+.finding.severity-high { border-left-color: #dc2626; }
+.finding.severity-medium { border-left-color: #d97706; }
+.finding.severity-low { border-left-color: #ca8a04; }
+.finding.severity-info { border-left-color: #6b7280; }
+
+.finding-head {
+  display: flex;
+  gap: 0.75rem;
+  font-size: 0.85rem;
+  margin-bottom: 0.35rem;
+  color: #444;
+}
+
+.rule-id { font-weight: 700; color: #111; }
+.score { margin-left: auto; font-weight: 700; }
+
+.description {
+  margin: 0 0 0.25rem;
+  font-weight: 500;
+}
+
+.evidence {
+  margin: 0;
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 0.85rem;
+  color: #555;
+  word-break: break-all;
+}

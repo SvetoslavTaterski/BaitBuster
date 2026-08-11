@@ -1,0 +1,50 @@
+<main class="page">
+  <h1>BaitBuster</h1>
+  <p class="subtitle">Анализ на .eml файл за фишинг индикатори</p>
+
+  <div class="upload-box">
+    <input type="file" accept=".eml" (change)="onFileSelected($event)" />
+    <button (click)="analyze()" [disabled]="!selectedFile() || loading()">
+      {{ loading() ? 'Анализира се…' : 'Анализирай' }}
+    </button>
+  </div>
+
+  @if (error()) {
+    <p class="error">{{ error() }}</p>
+  }
+
+  @if (report(); as r) {
+    <section class="report">
+      <div class="verdict verdict-{{ r.verdict.toLowerCase() }}">
+        <span class="verdict-label">{{ verdictLabel(r.verdict) }}</span>
+        <span class="risk-score">Risk score: {{ r.riskScore }} / 100</span>
+      </div>
+
+      <dl class="meta">
+        <dt>Тема</dt>
+        <dd>{{ r.emailSubject || '(без тема)' }}</dd>
+        <dt>От</dt>
+        <dd>{{ r.fromAddress || '(неизвестен)' }}</dd>
+      </dl>
+
+      @if (r.findings.length === 0) {
+        <p class="no-findings">Не са открити индикатори за фишинг.</p>
+      } @else {
+        <ul class="findings">
+          @for (f of r.findings; track f.ruleId + f.evidence) {
+            <li class="finding severity-{{ f.severity.toLowerCase() }}">
+              <div class="finding-head">
+                <span class="rule-id">{{ f.ruleId }}</span>
+                <span class="category">{{ f.category }}</span>
+                <span class="severity">{{ severityLabel(f.severity) }}</span>
+                <span class="score">+{{ f.score }}</span>
+              </div>
+              <p class="description">{{ f.description }}</p>
+              <p class="evidence">{{ f.evidence }}</p>
+            </li>
+          }
+        </ul>
+      }
+    </section>
+  }
+</main>
