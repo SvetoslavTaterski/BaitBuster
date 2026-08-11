@@ -1,0 +1,6 @@
+@BaitBuster.Api_HostAddress = http://localhost:5290
+
+GET {{BaitBuster.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

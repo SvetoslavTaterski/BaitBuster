@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/BaitBuster.Api/BaitBuster.Api.csproj" />
+    <Project Path="src/BaitBuster.Core/BaitBuster.Core.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/BaitBuster.Tests/BaitBuster.Tests.csproj" />
+  </Folder>
+</Solution>
