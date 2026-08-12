@@ -1,1 +1,135 @@
-/* You can add global styles to this file, and also import other style files */
+:root {
+  --surface-0: #f7f7f5;
+  --surface-1: #ffffff;
+  --surface-2: #fbfbf9;
+  --text-primary: #1a1a1a;
+  --text-secondary: #5f5e5a;
+  --text-muted: #888780;
+  --border: #e5e4df;
+  --border-strong: #cfcec7;
+  --radius: 8px;
+
+  --bg-accent: #e6f1fb;
+  --text-accent: #185fa5;
+  --fill-accent: #378add;
+  --on-accent: #ffffff;
+
+  --bg-danger: #fcebeb;
+  --text-danger: #a32d2d;
+  --border-danger: #e24b4a;
+  --fill-danger: #e24b4a;
+
+  --bg-warning: #faeeda;
+  --text-warning: #854f0b;
+  --border-warning: #ef9f27;
+  --fill-warning: #ef9f27;
+
+  --bg-success: #eaf3de;
+  --text-success: #3b6d11;
+  --border-success: #639922;
+  --fill-success: #639922;
+
+  --font-sans: 'Inter', system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: ui-monospace, Consolas, monospace;
+
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --surface-0: #191917;
+    --surface-1: #232321;
+    --surface-2: #292926;
+    --text-primary: #f1efe8;
+    --text-secondary: #b4b2a9;
+    --text-muted: #83817a;
+    --border: #37372f;
+    --border-strong: #48473d;
+
+    --bg-accent: #0c447c;
+    --text-accent: #b5d4f4;
+
+    --bg-danger: #501313;
+    --text-danger: #f7c1c1;
+    --border-danger: #a32d2d;
+
+    --bg-warning: #412402;
+    --text-warning: #fac775;
+    --border-warning: #854f0b;
+
+    --bg-success: #173404;
+    --text-success: #c0dd97;
+    --border-success: #3b6d11;
+  }
+}
+
+/* Explicit overrides win over the media query above regardless of source
+   order (attribute selector has higher specificity than plain :root). */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --surface-0: #191917;
+  --surface-1: #232321;
+  --surface-2: #292926;
+  --text-primary: #f1efe8;
+  --text-secondary: #b4b2a9;
+  --text-muted: #83817a;
+  --border: #37372f;
+  --border-strong: #48473d;
+
+  --bg-accent: #0c447c;
+  --text-accent: #b5d4f4;
+
+  --bg-danger: #501313;
+  --text-danger: #f7c1c1;
+  --border-danger: #a32d2d;
+
+  --bg-warning: #412402;
+  --text-warning: #fac775;
+  --border-warning: #854f0b;
+
+  --bg-success: #173404;
+  --text-success: #c0dd97;
+  --border-success: #3b6d11;
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+  --surface-0: #f7f7f5;
+  --surface-1: #ffffff;
+  --surface-2: #fbfbf9;
+  --text-primary: #1a1a1a;
+  --text-secondary: #5f5e5a;
+  --text-muted: #888780;
+  --border: #e5e4df;
+  --border-strong: #cfcec7;
+
+  --bg-accent: #e6f1fb;
+  --text-accent: #185fa5;
+
+  --bg-danger: #fcebeb;
+  --text-danger: #a32d2d;
+  --border-danger: #e24b4a;
+
+  --bg-warning: #faeeda;
+  --text-warning: #854f0b;
+  --border-warning: #ef9f27;
+
+  --bg-success: #eaf3de;
+  --text-success: #3b6d11;
+  --border-success: #639922;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--surface-0);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+}

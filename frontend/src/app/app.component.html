@@ -1,50 +1,131 @@
-<main class="page">
-  <h1>BaitBuster</h1>
-  <p class="subtitle">Анализ на .eml файл за фишинг индикатори</p>
-
-  <div class="upload-box">
-    <input type="file" accept=".eml" (change)="onFileSelected($event)" />
-    <button (click)="analyze()" [disabled]="!selectedFile() || loading()">
-      {{ loading() ? 'Анализира се…' : 'Анализирай' }}
-    </button>
-  </div>
-
-  @if (error()) {
-    <p class="error">{{ error() }}</p>
-  }
-
-  @if (report(); as r) {
-    <section class="report">
-      <div class="verdict verdict-{{ r.verdict.toLowerCase() }}">
-        <span class="verdict-label">{{ verdictLabel(r.verdict) }}</span>
-        <span class="risk-score">Risk score: {{ r.riskScore }} / 100</span>
+<div class="shell">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo">
+        <app-icon name="shield-check" [size]="20" />
       </div>
+      <span class="brand-name">BaitBuster</span>
+    </div>
 
-      <dl class="meta">
-        <dt>Тема</dt>
-        <dd>{{ r.emailSubject || '(без тема)' }}</dd>
-        <dt>От</dt>
-        <dd>{{ r.fromAddress || '(неизвестен)' }}</dd>
-      </dl>
+    <nav class="nav">
+      <span class="nav-item active">
+        <app-icon name="upload" [size]="18" />
+        Анализ
+      </span>
+      <span class="nav-item disabled" title="Очаквайте скоро">
+        <app-icon name="clock" [size]="18" />
+        История
+      </span>
+      <span class="nav-item disabled" title="Очаквайте скоро">
+        <app-icon name="chart-bar" [size]="18" />
+        ML модел
+      </span>
+    </nav>
 
-      @if (r.findings.length === 0) {
-        <p class="no-findings">Не са открити индикатори за фишинг.</p>
-      } @else {
-        <ul class="findings">
-          @for (f of r.findings; track f.ruleId + f.evidence) {
-            <li class="finding severity-{{ f.severity.toLowerCase() }}">
-              <div class="finding-head">
-                <span class="rule-id">{{ f.ruleId }}</span>
-                <span class="category">{{ f.category }}</span>
-                <span class="severity">{{ severityLabel(f.severity) }}</span>
-                <span class="score">+{{ f.score }}</span>
-              </div>
-              <p class="description">{{ f.description }}</p>
-              <p class="evidence">{{ f.evidence }}</p>
-            </li>
-          }
-        </ul>
+    <button
+      class="theme-toggle"
+      type="button"
+      (click)="toggleTheme()"
+      [attr.aria-label]="theme() === 'dark' ? 'Превключи на светла тема' : 'Превключи на тъмна тема'"
+    >
+      <app-icon name="sun" [size]="14" />
+      <span class="toggle-track" [class.is-dark]="theme() === 'dark'">
+        <span class="toggle-thumb"></span>
+      </span>
+      <app-icon name="moon" [size]="14" />
+    </button>
+  </aside>
+
+  <main class="content">
+   <div class="content-inner">
+    <h2 class="page-title">Анализ на имейл</h2>
+    <p class="page-subtitle">Качете .eml файл, за да проверите за фишинг индикатори.</p>
+
+    <div
+      class="dropzone"
+      [class.dragging]="isDragging()"
+      (dragover)="onDragOver($event)"
+      (dragleave)="onDragLeave()"
+      (drop)="onDrop($event)"
+    >
+      <app-icon name="upload" [size]="26" />
+      <p class="dropzone-hint">Провлачете .eml файл тук или</p>
+      <div class="dropzone-actions">
+        <label class="file-button">
+          Избери файл
+          <input type="file" accept=".eml" (change)="onFileSelected($event)" hidden />
+        </label>
+        <button class="primary-button" (click)="analyze()" [disabled]="!selectedFile() || loading()">
+          {{ loading() ? 'Анализира се…' : 'Анализирай' }}
+        </button>
+      </div>
+      @if (selectedFile(); as file) {
+        <p class="selected-file">{{ file.name }} · {{ formatBytes(file.size) }}</p>
       }
-    </section>
-  }
-</main>
+    </div>
+
+    @if (error()) {
+      <p class="error">{{ error() }}</p>
+    }
+
+    @if (report(); as r) {
+      <section class="dashboard">
+        <div class="summary">
+          <div class="gauge">
+            <svg width="88" height="88">
+              <circle cx="44" cy="44" r="38" class="gauge-track" />
+              <circle
+                cx="44" cy="44" r="38"
+                class="gauge-value verdict-{{ r.verdict.toLowerCase() }}"
+                [style.stroke-dasharray]="gaugeCircumference"
+                [style.stroke-dashoffset]="gaugeOffset()"
+              />
+            </svg>
+            <span class="gauge-score">{{ r.riskScore }}</span>
+          </div>
+
+          <span class="verdict-badge verdict-{{ r.verdict.toLowerCase() }}">
+            <app-icon [name]="verdictIcon(r.verdict)" [size]="16" />
+            {{ verdictLabel(r.verdict) }}
+          </span>
+
+          <dl class="meta">
+            <dt>Тема</dt>
+            <dd>{{ r.emailSubject || '(без тема)' }}</dd>
+            <dt>От</dt>
+            <dd>{{ r.fromAddress || '(неизвестен)' }}</dd>
+          </dl>
+        </div>
+
+        <div class="findings-by-category">
+          @if (groupedFindings().length === 0) {
+            <p class="no-findings">Не са открити индикатори за фишинг.</p>
+          } @else {
+            @for (group of groupedFindings(); track group.category) {
+              <div class="category-group">
+                <div class="category-head">
+                  <app-icon [name]="group.icon" [size]="16" />
+                  <span>{{ group.category }} · {{ group.findings.length }} находки</span>
+                </div>
+                <ul class="findings">
+                  @for (f of group.findings; track f.ruleId + f.evidence) {
+                    <li class="finding severity-{{ f.severity.toLowerCase() }}">
+                      <div class="finding-head">
+                        <span class="rule-id">{{ f.ruleId }}</span>
+                        <span class="severity">{{ severityLabel(f.severity) }}</span>
+                        <span class="score">+{{ f.score }}</span>
+                      </div>
+                      <p class="description">{{ f.description }}</p>
+                      <p class="evidence">{{ f.evidence }}</p>
+                    </li>
+                  }
+                </ul>
+              </div>
+            }
+          }
+        </div>
+      </section>
+    }
+   </div>
+  </main>
+</div>
