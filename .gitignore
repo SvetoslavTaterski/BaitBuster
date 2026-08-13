@@ -10,6 +10,11 @@
 # Visual Studio cache/options directory
 .vs/
 
+# Local SQLite database
+*.db
+*.db-shm
+*.db-wal
+
 # Build results
 [Dd]ebug/
 [Dd]ebugPublic/

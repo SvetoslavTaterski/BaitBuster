@@ -18,3 +18,17 @@ export interface AnalysisReport {
   riskScore: number;
   verdict: Verdict;
 }
+
+export interface HistoryListItem {
+  id: number;
+  emailSubject: string;
+  fromAddress: string;
+  riskScore: number;
+  verdict: Verdict;
+  analyzedAt: string;
+  findingsCount: number;
+}
+
+export interface HistoryDetail extends AnalysisReport {
+  id: number;
+}

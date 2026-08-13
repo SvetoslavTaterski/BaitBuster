@@ -8,11 +8,11 @@
     </div>
 
     <nav class="nav">
-      <span class="nav-item active">
+      <span class="nav-item" [class.active]="activeView() === 'analyze'" (click)="showAnalyze()">
         <app-icon name="upload" [size]="18" />
         Анализ
       </span>
-      <span class="nav-item disabled" title="Очаквайте скоро">
+      <span class="nav-item" [class.active]="activeView() === 'history'" (click)="showHistory()">
         <app-icon name="clock" [size]="18" />
         История
       </span>
@@ -38,6 +38,7 @@
 
   <main class="content">
    <div class="content-inner">
+   @if (activeView() === 'analyze') {
     <h2 class="page-title">Анализ на имейл</h2>
     <p class="page-subtitle">Качете .eml файл, за да проверите за фишинг индикатори.</p>
 
@@ -53,14 +54,28 @@
       <div class="dropzone-actions">
         <label class="file-button">
           Избери файл
-          <input type="file" accept=".eml" (change)="onFileSelected($event)" hidden />
+          <input #fileInput type="file" accept=".eml" (change)="onFileSelected($event)" hidden />
         </label>
         <button class="primary-button" (click)="analyze()" [disabled]="!selectedFile() || loading()">
+          @if (loading()) {
+            <span class="spinner"></span>
+          }
           {{ loading() ? 'Анализира се…' : 'Анализирай' }}
         </button>
       </div>
       @if (selectedFile(); as file) {
-        <p class="selected-file">{{ file.name }} · {{ formatBytes(file.size) }}</p>
+        <div class="selected-file">
+          <span>{{ file.name }} · {{ formatBytes(file.size) }}</span>
+          <button
+            type="button"
+            class="clear-file-button"
+            (click)="clearFile(fileInput)"
+            [disabled]="loading()"
+            aria-label="Премахни избрания файл"
+          >
+            <app-icon name="x" [size]="14" />
+          </button>
+        </div>
       }
     </div>
 
@@ -81,7 +96,7 @@
                 [style.stroke-dashoffset]="gaugeOffset()"
               />
             </svg>
-            <span class="gauge-score">{{ r.riskScore }}</span>
+            <span class="gauge-score">{{ displayedScore() }}</span>
           </div>
 
           <span class="verdict-badge verdict-{{ r.verdict.toLowerCase() }}">
@@ -101,11 +116,11 @@
           @if (groupedFindings().length === 0) {
             <p class="no-findings">Не са открити индикатори за фишинг.</p>
           } @else {
-            @for (group of groupedFindings(); track group.category) {
-              <div class="category-group">
+            @for (group of groupedFindings(); track group.category; let i = $index) {
+              <div class="category-group" [style.animation-delay.ms]="100 + i * 90">
                 <div class="category-head">
                   <app-icon [name]="group.icon" [size]="16" />
-                  <span>{{ group.category }} · {{ group.findings.length }} находки</span>
+                  <span>{{ group.category }} · {{ group.findings.length }} {{ findingsWord(group.findings.length) }}</span>
                 </div>
                 <ul class="findings">
                   @for (f of group.findings; track f.ruleId + f.evidence) {
@@ -126,6 +141,39 @@
         </div>
       </section>
     }
+   } @else {
+    <h2 class="page-title">История на анализите</h2>
+    <p class="page-subtitle">Последните анализирани имейли.</p>
+
+    @if (historyLoading()) {
+      <p class="page-subtitle">Зареждане…</p>
+    } @else if (historyError()) {
+      <p class="error">{{ historyError() }}</p>
+    } @else if (historyItems().length === 0) {
+      <p class="no-findings" style="color: var(--text-muted)">Все още няма анализирани имейли.</p>
+    } @else {
+      <ul class="history-list">
+        @for (item of historyItems(); track item.id) {
+          <li class="history-item verdict-{{ item.verdict.toLowerCase() }}" (click)="viewHistoryItem(item.id)">
+            <app-icon [name]="verdictIcon(item.verdict)" [size]="18" />
+            <div class="history-item-main">
+              <p class="history-subject">{{ item.emailSubject || '(без тема)' }}</p>
+              <p class="history-meta">{{ item.fromAddress }} · {{ item.findingsCount }} {{ findingsWord(item.findingsCount) }} · {{ formatDate(item.analyzedAt) }}</p>
+            </div>
+            <span class="history-score">{{ item.riskScore }}</span>
+            <button
+              type="button"
+              class="clear-file-button"
+              (click)="deleteHistoryItem(item.id, $event)"
+              aria-label="Изтрий записа"
+            >
+              <app-icon name="x" [size]="14" />
+            </button>
+          </li>
+        }
+      </ul>
+    }
+   }
    </div>
   </main>
 </div>

@@ -1,6 +1,6 @@
 import { Component, computed, signal } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { AnalysisReport, Finding } from './analysis.model';
+import { AnalysisReport, Finding, HistoryDetail, HistoryListItem } from './analysis.model';
 import { IconComponent, IconName } from './icon.component';
 
 const API_BASE_URL = 'http://localhost:5289';
@@ -9,6 +9,8 @@ const GAUGE_CIRCUMFERENCE = 2 * Math.PI * GAUGE_RADIUS;
 
 type Theme = 'light' | 'dark';
 const THEME_STORAGE_KEY = 'baitbuster-theme';
+
+type View = 'analyze' | 'history';
 
 const CATEGORY_ORDER = ['Headers', 'Urls', 'Content', 'Attachments', 'Ml'];
 const CATEGORY_ICONS: Record<string, IconName> = {
@@ -38,12 +40,18 @@ export class AppComponent {
   error = signal<string | null>(null);
   theme = signal<Theme>(this.readInitialTheme());
   report = signal<AnalysisReport | null>(null);
+  displayedScore = signal(0);
+  private animationFrameId: number | null = null;
+
+  activeView = signal<View>('analyze');
+  historyItems = signal<HistoryListItem[]>([]);
+  historyLoading = signal(false);
+  historyError = signal<string | null>(null);
 
   readonly gaugeCircumference = GAUGE_CIRCUMFERENCE;
 
   gaugeOffset = computed(() => {
-    const score = this.report()?.riskScore ?? 0;
-    return GAUGE_CIRCUMFERENCE * (1 - score / 100);
+    return GAUGE_CIRCUMFERENCE * (1 - this.displayedScore() / 100);
   });
 
   groupedFindings = computed<FindingGroup[]>(() => {
@@ -67,6 +75,32 @@ export class AppComponent {
 
   constructor(private readonly http: HttpClient) {
     this.applyTheme(this.theme());
+  }
+
+  private animateScoreTo(target: number): void {
+    if (this.animationFrameId !== null) {
+      cancelAnimationFrame(this.animationFrameId);
+      this.animationFrameId = null;
+    }
+
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduceMotion) {
+      this.displayedScore.set(target);
+      return;
+    }
+
+    const from = this.displayedScore();
+    const duration = 700;
+    const start = performance.now();
+
+    const step = (now: number) => {
+      const t = Math.min(1, (now - start) / duration);
+      const eased = 1 - Math.pow(1 - t, 3);
+      this.displayedScore.set(Math.round(from + (target - from) * eased));
+      this.animationFrameId = t < 1 ? requestAnimationFrame(step) : null;
+    };
+
+    this.animationFrameId = requestAnimationFrame(step);
   }
 
   toggleTheme(): void {
@@ -110,6 +144,12 @@ export class AppComponent {
     this.selectedFile.set(file);
     this.error.set(null);
     this.report.set(null);
+    this.animateScoreTo(0);
+  }
+
+  clearFile(fileInput: HTMLInputElement): void {
+    fileInput.value = '';
+    this.setFile(null);
   }
 
   analyze(): void {
@@ -122,15 +162,68 @@ export class AppComponent {
     this.loading.set(true);
     this.error.set(null);
     this.report.set(null);
+    this.animateScoreTo(0);
 
     this.http.post<AnalysisReport>(`${API_BASE_URL}/api/analysis/upload`, formData).subscribe({
       next: (report) => {
         this.report.set(report);
         this.loading.set(false);
+        this.animateScoreTo(report.riskScore);
       },
       error: (err: HttpErrorResponse) => {
         this.error.set(typeof err.error === 'string' ? err.error : 'Възникна грешка при анализа.');
         this.loading.set(false);
+      }
+    });
+  }
+
+  showAnalyze(): void {
+    this.activeView.set('analyze');
+  }
+
+  showHistory(): void {
+    this.activeView.set('history');
+    this.historyLoading.set(true);
+    this.historyError.set(null);
+
+    this.http.get<HistoryListItem[]>(`${API_BASE_URL}/api/analysis/history`).subscribe({
+      next: (items) => {
+        this.historyItems.set(items);
+        this.historyLoading.set(false);
+      },
+      error: () => {
+        this.historyError.set('Неуспешно зареждане на историята.');
+        this.historyLoading.set(false);
+      }
+    });
+  }
+
+  viewHistoryItem(id: number): void {
+    this.http.get<HistoryDetail>(`${API_BASE_URL}/api/analysis/history/${id}`).subscribe({
+      next: (detail) => {
+        this.selectedFile.set(null);
+        this.error.set(null);
+        this.report.set(detail);
+        this.animateScoreTo(detail.riskScore);
+        this.activeView.set('analyze');
+      },
+      error: () => {
+        this.historyError.set('Неуспешно зареждане на записа.');
+      }
+    });
+  }
+
+  deleteHistoryItem(id: number, event: Event): void {
+    event.stopPropagation();
+
+    if (!confirm('Да изтрия ли този анализ от историята?')) return;
+
+    this.http.delete(`${API_BASE_URL}/api/analysis/history/${id}`).subscribe({
+      next: () => {
+        this.historyItems.update((items) => items.filter((item) => item.id !== id));
+      },
+      error: () => {
+        this.historyError.set('Неуспешно изтриване на записа.');
       }
     });
   }
@@ -164,5 +257,16 @@ export class AppComponent {
     return bytes < 1024
       ? `${bytes} B`
       : `${(bytes / 1024).toFixed(1)} KB`;
+  }
+
+  findingsWord(count: number): string {
+    return count === 1 ? 'находка' : 'находки';
+  }
+
+  formatDate(iso: string): string {
+    return new Date(iso).toLocaleString('bg-BG', {
+      day: '2-digit', month: '2-digit', year: 'numeric',
+      hour: '2-digit', minute: '2-digit'
+    });
   }
 }

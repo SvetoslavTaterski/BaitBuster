@@ -12,7 +12,8 @@ export type IconName =
   | 'clock'
   | 'chart-bar'
   | 'sun'
-  | 'moon';
+  | 'moon'
+  | 'x';
 
 @Component({
   selector: 'app-icon',
@@ -31,16 +32,16 @@ export type IconName =
     >
       @switch (name) {
         @case ('shield-check') {
-          <path d="M12 2 20 6 20 11C20 16 16.5 20 12 22 7.5 20 4 16 4 11 4 6Z" />
+          <path d="M12,2 L20,6 L20,11 C20,16 16.5,19.5 12,22 C7.5,19.5 4,16 4,11 L4,6 Z" />
           <path d="M8.5 12.5 11 15 15.5 9.5" />
         }
         @case ('shield-alert') {
-          <path d="M12 2 20 6 20 11C20 16 16.5 20 12 22 7.5 20 4 16 4 11 4 6Z" />
+          <path d="M12,2 L20,6 L20,11 C20,16 16.5,19.5 12,22 C7.5,19.5 4,16 4,11 L4,6 Z" />
           <line x1="12" y1="8" x2="12" y2="13" />
           <circle cx="12" cy="16.3" r="0.6" fill="currentColor" />
         }
         @case ('shield-x') {
-          <path d="M12 2 20 6 20 11C20 16 16.5 20 12 22 7.5 20 4 16 4 11 4 6Z" />
+          <path d="M12,2 L20,6 L20,11 C20,16 16.5,19.5 12,22 C7.5,19.5 4,16 4,11 L4,6 Z" />
           <line x1="9.3" y1="9.3" x2="14.7" y2="14.7" />
           <line x1="14.7" y1="9.3" x2="9.3" y2="14.7" />
         }
@@ -87,6 +88,10 @@ export type IconName =
         }
         @case ('moon') {
           <path d="M20 14.5A8 8 0 1 1 9.5 4 6.5 6.5 0 0 0 20 14.5Z" />
+        }
+        @case ('x') {
+          <line x1="5" y1="5" x2="19" y2="19" />
+          <line x1="19" y1="5" x2="5" y2="19" />
         }
       }
     </svg>
