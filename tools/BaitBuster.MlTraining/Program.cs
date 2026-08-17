@@ -1,3 +1,4 @@
+using System.Text.Json;
 using BaitBuster.Core.Detection.Ml;
 using Microsoft.ML;
 
@@ -8,6 +9,8 @@ var dataPath = args.ElementAtOrDefault(0)
 var modelPath = args.ElementAtOrDefault(1)
     ?? throw new ArgumentException("Втори аргумент: път, на който да се запише model.zip.");
 
+const string algorithm = "SdcaLogisticRegression";
+
 var ml = new MLContext(seed: 42);
 
 // 1. Зареждане на данните от TSV файла.
@@ -15,10 +18,16 @@ Console.WriteLine($"Зареждам данни от {dataPath}");
 var allData = ml.Data.LoadFromTextFile<EmailData>(
     dataPath, separatorChar: '\t', hasHeader: true);
 
+var rows = ml.Data.CreateEnumerable<EmailData>(allData, reuseRowObject: false).ToList();
+var phishingCount = rows.Count(r => r.Label);
+Console.WriteLine($"{rows.Count} примера ({phishingCount} фишинг, {rows.Count - phishingCount} легитимни)");
+
 // 2. Разделяне на данните: 80% за обучение, 20% за проверка.
 //    Моделът никога не вижда тестовите редове по време на обучението,
 //    затова резултатът върху тях показва как се справя с нови имейли.
-var split = ml.Data.TrainTestSplit(allData, testFraction: 0.2);
+var split = ml.Data.TrainTestSplit(allData, testFraction: 0.2, seed: 42);
+var trainCount = ml.Data.CreateEnumerable<EmailData>(split.TrainSet, reuseRowObject: false).Count();
+var testCount = ml.Data.CreateEnumerable<EmailData>(split.TestSet, reuseRowObject: false).Count();
 
 // 3. Дефиниране на pipeline-а — последователността от стъпки:
 //    FeaturizeText превръща текста в числа (честоти на думи и словосъчетания),
@@ -52,3 +61,24 @@ Console.WriteLine();
 Directory.CreateDirectory(Path.GetDirectoryName(modelPath)!);
 ml.Model.Save(model, allData.Schema, modelPath);
 Console.WriteLine($"Моделът е записан в {modelPath}");
+
+// 7. Метаданните пътуват до модела и захранват „ML модел" таба в UI-то.
+var metadata = new ModelMetadata(
+    TrainedAt: DateTimeOffset.UtcNow,
+    Algorithm: algorithm,
+    TotalExamples: rows.Count,
+    TrainingExamples: trainCount,
+    TestExamples: testCount,
+    PhishingExamples: phishingCount,
+    LegitimateExamples: rows.Count - phishingCount,
+    Metrics: new ModelMetrics(
+        metrics.Accuracy,
+        metrics.PositivePrecision,
+        metrics.PositiveRecall,
+        metrics.F1Score,
+        metrics.AreaUnderRocCurve));
+
+var metadataPath = Path.ChangeExtension(modelPath, ".json");
+File.WriteAllText(metadataPath,
+    JsonSerializer.Serialize(metadata, new JsonSerializerOptions { WriteIndented = true }));
+Console.WriteLine($"Метаданните са записани в {metadataPath}");

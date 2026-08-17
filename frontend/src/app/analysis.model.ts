@@ -32,3 +32,22 @@ export interface HistoryListItem {
 export interface HistoryDetail extends AnalysisReport {
   id: number;
 }
+
+export interface ModelMetrics {
+  accuracy: number;
+  precision: number;
+  recall: number;
+  f1Score: number;
+  areaUnderRocCurve: number;
+}
+
+export interface ModelInfo {
+  trainedAt: string;
+  algorithm: string;
+  totalExamples: number;
+  trainingExamples: number;
+  testExamples: number;
+  phishingExamples: number;
+  legitimateExamples: number;
+  metrics: ModelMetrics;
+}

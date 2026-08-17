@@ -13,7 +13,8 @@ export type IconName =
   | 'chart-bar'
   | 'sun'
   | 'moon'
-  | 'x';
+  | 'x'
+  | 'cpu';
 
 @Component({
   selector: 'app-icon',
@@ -92,6 +93,18 @@ export type IconName =
         @case ('x') {
           <line x1="5" y1="5" x2="19" y2="19" />
           <line x1="19" y1="5" x2="5" y2="19" />
+        }
+        @case ('cpu') {
+          <rect x="6" y="6" width="12" height="12" rx="1.5" />
+          <rect x="10" y="10" width="4" height="4" rx="0.5" />
+          <line x1="9" y1="3" x2="9" y2="6" />
+          <line x1="15" y1="3" x2="15" y2="6" />
+          <line x1="9" y1="18" x2="9" y2="21" />
+          <line x1="15" y1="18" x2="15" y2="21" />
+          <line x1="3" y1="9" x2="6" y2="9" />
+          <line x1="3" y1="15" x2="6" y2="15" />
+          <line x1="18" y1="9" x2="21" y2="9" />
+          <line x1="18" y1="15" x2="21" y2="15" />
         }
       }
     </svg>

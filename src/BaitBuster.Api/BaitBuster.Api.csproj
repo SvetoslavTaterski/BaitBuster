@@ -31,8 +31,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Обученият модел пътува с приложението; регенерира се с BaitBuster.MlTraining. -->
+    <!-- Обученият модел и метриките му пътуват с приложението;
+         регенерират се с BaitBuster.MlTraining. -->
     <None Include="..\..\models\phishing-model.zip" Link="models\phishing-model.zip"
+          CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\models\phishing-model.json" Link="models\phishing-model.json"
           CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 

@@ -1,6 +1,6 @@
 import { Component, computed, signal } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { AnalysisReport, Finding, HistoryDetail, HistoryListItem } from './analysis.model';
+import { AnalysisReport, Finding, HistoryDetail, HistoryListItem, ModelInfo } from './analysis.model';
 import { IconComponent, IconName } from './icon.component';
 
 const API_BASE_URL = 'http://localhost:5289';
@@ -10,18 +10,27 @@ const GAUGE_CIRCUMFERENCE = 2 * Math.PI * GAUGE_RADIUS;
 type Theme = 'light' | 'dark';
 const THEME_STORAGE_KEY = 'baitbuster-theme';
 
-type View = 'analyze' | 'history';
+type View = 'analyze' | 'history' | 'model';
 
 const CATEGORY_ORDER = ['Headers', 'Urls', 'Content', 'Attachments', 'Ml'];
 const CATEGORY_ICONS: Record<string, IconName> = {
   Headers: 'mail',
   Urls: 'link',
   Content: 'alert-triangle',
-  Attachments: 'paperclip'
+  Attachments: 'paperclip',
+  Ml: 'cpu'
+};
+const CATEGORY_LABELS: Record<string, string> = {
+  Headers: 'Заглавки',
+  Urls: 'Линкове',
+  Content: 'Съдържание',
+  Attachments: 'Прикачени файлове',
+  Ml: 'ML класификатор'
 };
 
 interface FindingGroup {
   category: string;
+  label: string;
   icon: IconName;
   findings: Finding[];
 }
@@ -49,6 +58,18 @@ export class AppComponent {
   historyLoading = signal(false);
   historyError = signal<string | null>(null);
 
+  modelInfo = signal<ModelInfo | null>(null);
+  modelLoading = signal(false);
+  modelError = signal<string | null>(null);
+
+  /** Под този брой примери метриките не са представителни.
+   *  Сравнението стои тук, а не в темплейта — „<" в условие на @if
+   *  се парсва като начало на HTML таг. */
+  smallDataset = computed(() => {
+    const info = this.modelInfo();
+    return info !== null && info.totalExamples < 500;
+  });
+
   readonly gaugeCircumference = GAUGE_CIRCUMFERENCE;
 
   gaugeOffset = computed(() => {
@@ -69,6 +90,7 @@ export class AppComponent {
       .sort((a, b) => CATEGORY_ORDER.indexOf(a) - CATEGORY_ORDER.indexOf(b))
       .map((category) => ({
         category,
+        label: CATEGORY_LABELS[category] ?? category,
         icon: CATEGORY_ICONS[category] ?? 'alert-triangle',
         findings: byCategory.get(category)!
       }));
@@ -221,6 +243,30 @@ export class AppComponent {
         this.historyError.set('Неуспешно зареждане на записа.');
       }
     });
+  }
+
+  showModel(): void {
+    this.activeView.set('model');
+
+    if (this.modelInfo()) return;
+
+    this.modelLoading.set(true);
+    this.modelError.set(null);
+
+    this.http.get<ModelInfo>(`${API_BASE_URL}/api/model/info`).subscribe({
+      next: (info) => {
+        this.modelInfo.set(info);
+        this.modelLoading.set(false);
+      },
+      error: () => {
+        this.modelError.set('Няма обучен модел или информацията не може да бъде заредена.');
+        this.modelLoading.set(false);
+      }
+    });
+  }
+
+  formatPercent(value: number): string {
+    return `${(value * 100).toFixed(1)}%`;
   }
 
   deleteHistoryItem(id: number, event: Event): void {

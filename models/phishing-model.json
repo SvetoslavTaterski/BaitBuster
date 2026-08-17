@@ -1,0 +1,16 @@
+{
+  "TrainedAt": "2026-08-17T14:12:00.9911787+00:00",
+  "Algorithm": "SdcaLogisticRegression",
+  "TotalExamples": 80,
+  "TrainingExamples": 68,
+  "TestExamples": 12,
+  "PhishingExamples": 40,
+  "LegitimateExamples": 40,
+  "Metrics": {
+    "Accuracy": 1,
+    "Precision": 1,
+    "Recall": 1,
+    "F1Score": 1,
+    "AreaUnderRocCurve": 1
+  }
+}

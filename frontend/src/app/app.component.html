@@ -16,7 +16,7 @@
         <app-icon name="clock" [size]="18" />
         История
       </span>
-      <span class="nav-item disabled" title="Очаквайте скоро">
+      <span class="nav-item" [class.active]="activeView() === 'model'" (click)="showModel()">
         <app-icon name="chart-bar" [size]="18" />
         ML модел
       </span>
@@ -120,7 +120,7 @@
               <div class="category-group" [style.animation-delay.ms]="100 + i * 90">
                 <div class="category-head">
                   <app-icon [name]="group.icon" [size]="16" />
-                  <span>{{ group.category }} · {{ group.findings.length }} {{ findingsWord(group.findings.length) }}</span>
+                  <span>{{ group.label }} · {{ group.findings.length }} {{ findingsWord(group.findings.length) }}</span>
                 </div>
                 <ul class="findings">
                   @for (f of group.findings; track f.ruleId + f.evidence) {
@@ -141,7 +141,7 @@
         </div>
       </section>
     }
-   } @else {
+   } @else if (activeView() === 'history') {
     <h2 class="page-title">История на анализите</h2>
     <p class="page-subtitle">Последните анализирани имейли.</p>
 
@@ -172,6 +172,69 @@
           </li>
         }
       </ul>
+    }
+   } @else {
+    <h2 class="page-title">ML модел</h2>
+    <p class="page-subtitle">Обучен класификатор, работещ като четвърто детекционно правило.</p>
+
+    @if (modelLoading()) {
+      <p class="page-subtitle">Зареждане…</p>
+    } @else if (modelError()) {
+      <p class="error">{{ modelError() }}</p>
+    } @else {
+      @if (modelInfo(); as m) {
+      <div class="metric-grid">
+        <div class="metric-card">
+          <span class="metric-label">Accuracy</span>
+          <span class="metric-value">{{ formatPercent(m.metrics.accuracy) }}</span>
+          <span class="metric-hint">Общ дял верни отговори</span>
+        </div>
+        <div class="metric-card">
+          <span class="metric-label">Precision</span>
+          <span class="metric-value">{{ formatPercent(m.metrics.precision) }}</span>
+          <span class="metric-hint">От маркираните като фишинг, колко наистина са</span>
+        </div>
+        <div class="metric-card">
+          <span class="metric-label">Recall</span>
+          <span class="metric-value">{{ formatPercent(m.metrics.recall) }}</span>
+          <span class="metric-hint">От истинските фишинг, колко е хванал</span>
+        </div>
+        <div class="metric-card">
+          <span class="metric-label">F1 score</span>
+          <span class="metric-value">{{ formatPercent(m.metrics.f1Score) }}</span>
+          <span class="metric-hint">Баланс между precision и recall</span>
+        </div>
+      </div>
+
+      <div class="model-details">
+        <dl class="model-facts">
+          <dt>Алгоритъм</dt>
+          <dd>{{ m.algorithm }}</dd>
+          <dt>Обучен на</dt>
+          <dd>{{ formatDate(m.trainedAt) }}</dd>
+          <dt>Тренировъчни примери</dt>
+          <dd>{{ m.trainingExamples }}</dd>
+          <dt>Тестови примери</dt>
+          <dd>{{ m.testExamples }}</dd>
+          <dt>Състав на данните</dt>
+          <dd>{{ m.phishingExamples }} фишинг · {{ m.legitimateExamples }} легитимни</dd>
+        </dl>
+      </div>
+
+      @if (smallDataset()) {
+        <div class="model-warning">
+          <app-icon name="alert-triangle" [size]="18" />
+          <div>
+            <p class="model-warning-title">Ограничена извадка</p>
+            <p class="model-warning-text">
+              Моделът е обучен само върху {{ m.totalExamples }} синтетични примера,
+              затова метриките са оптимистични и не отразяват реална употреба.
+              За достоверни резултати е нужен публичен датасет с реални имейли.
+            </p>
+          </div>
+        </div>
+      }
+      }
     }
    }
    </div>

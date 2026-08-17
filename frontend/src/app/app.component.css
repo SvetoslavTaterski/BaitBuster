@@ -376,6 +376,81 @@
   animation: reveal-up 0.35s ease both;
 }
 
+.metric-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.metric-card {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  background: var(--surface-1);
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+}
+
+.metric-label {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.metric-value {
+  font-size: 26px;
+  font-weight: 700;
+}
+
+.metric-hint {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.model-details {
+  background: var(--surface-1);
+  border-radius: 12px;
+  padding: 1.25rem;
+}
+
+.model-facts {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 8px 24px;
+  margin: 0;
+}
+
+.model-facts dt {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.model-facts dd {
+  margin: 0;
+  font-size: 14px;
+}
+
+.model-warning {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  background: var(--bg-warning);
+  color: var(--text-warning);
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+}
+
+.model-warning-title {
+  margin: 0 0 2px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.model-warning-text {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
 .history-list {
   list-style: none;
   padding: 0;
