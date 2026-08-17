@@ -4,6 +4,14 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+
+    <!--
+      Без нативен apphost (.exe) — само dotnet.exe (споделен, вече доверен хост)
+      изпълнява приложението през App.dll. На машини с корпоративен AppLocker/
+      Defender Application Control, локално build-нат неподписан .exe често се
+      блокира с "Access is denied", докато самият dotnet.exe е вече одобрен.
+    -->
+    <UseAppHost>false</UseAppHost>
   </PropertyGroup>
 
   <ItemGroup>
@@ -20,6 +28,12 @@
 
   <ItemGroup>
     <ProjectReference Include="..\BaitBuster.Core\BaitBuster.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Обученият модел пътува с приложението; регенерира се с BaitBuster.MlTraining. -->
+    <None Include="..\..\models\phishing-model.zip" Link="models\phishing-model.zip"
+          CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

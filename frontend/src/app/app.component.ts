@@ -44,6 +44,7 @@ export class AppComponent {
   private animationFrameId: number | null = null;
 
   activeView = signal<View>('analyze');
+  viewingHistoryItem = signal(false);
   historyItems = signal<HistoryListItem[]>([]);
   historyLoading = signal(false);
   historyError = signal<string | null>(null);
@@ -144,6 +145,7 @@ export class AppComponent {
     this.selectedFile.set(file);
     this.error.set(null);
     this.report.set(null);
+    this.viewingHistoryItem.set(false);
     this.animateScoreTo(0);
   }
 
@@ -178,6 +180,13 @@ export class AppComponent {
   }
 
   showAnalyze(): void {
+    if (this.viewingHistoryItem()) {
+      this.viewingHistoryItem.set(false);
+      this.selectedFile.set(null);
+      this.error.set(null);
+      this.report.set(null);
+      this.animateScoreTo(0);
+    }
     this.activeView.set('analyze');
   }
 
@@ -205,6 +214,7 @@ export class AppComponent {
         this.error.set(null);
         this.report.set(detail);
         this.animateScoreTo(detail.riskScore);
+        this.viewingHistoryItem.set(true);
         this.activeView.set('analyze');
       },
       error: () => {

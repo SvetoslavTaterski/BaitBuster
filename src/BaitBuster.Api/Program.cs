@@ -1,9 +1,11 @@
 using System.Text.Json.Serialization;
 using BaitBuster.Api.Persistence;
 using BaitBuster.Core.Detection;
+using BaitBuster.Core.Detection.Ml;
 using BaitBuster.Core.Detection.Rules;
 using BaitBuster.Core.Parsing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.ML;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -26,11 +28,17 @@ builder.Services.AddDbContext<BaitBusterDbContext>(options =>
 builder.Services.AddSingleton<EmlParser>();
 builder.Services.AddSingleton<DetectionEngine>();
 
+// Обученият ML модел. PredictionEnginePool се грижи за thread-safety —
+// самият PredictionEngine не е безопасен за паралелни заявки.
+builder.Services
+    .AddPredictionEnginePool<EmailData, EmailPrediction>()
+    .FromFile(Path.Combine(AppContext.BaseDirectory, "models", "phishing-model.zip"));
+
 // Детекционни правила — всяко ново правило се добавя само тук.
-// По-късно ML класификаторът се регистрира по същия начин.
 builder.Services.AddSingleton<IDetectionRule, HeaderMismatchRule>();
 builder.Services.AddSingleton<IDetectionRule, UrlAnalysisRule>();
 builder.Services.AddSingleton<IDetectionRule, UrgencyContentRule>();
+builder.Services.AddSingleton<IDetectionRule, MlClassifierRule>();
 
 // CORS за Angular dev сървъра
 builder.Services.AddCors(o => o.AddPolicy("angular", p =>
