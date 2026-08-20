@@ -279,7 +279,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .dashboard, .category-group, .spinner, .gauge-value {
+  .dashboard, .category-group, .spinner, .gauge-value, .category-head app-icon:first-child {
     animation: none !important;
     transition: none !important;
   }
@@ -362,7 +362,7 @@
 .findings-by-category {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 8px;
   min-width: 0;
 }
 
@@ -509,10 +509,44 @@
 .category-head {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  border-radius: var(--radius);
+  background: var(--surface-2);
+  font-family: inherit;
   font-size: 13px;
   color: var(--text-secondary);
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.category-head:hover {
+  background: var(--border);
+  color: var(--text-primary);
+}
+
+.category-head.expanded {
   margin-bottom: 8px;
+  color: var(--text-primary);
+}
+
+/* Стрелката сочи надолу в свито състояние и се завърта при отваряне. */
+.category-head app-icon:first-child {
+  display: inline-flex;
+  transition: transform 0.2s ease;
+}
+
+.category-head.expanded app-icon:first-child {
+  transform: rotate(180deg);
+}
+
+.category-score {
+  margin-left: auto;
+  font-weight: 600;
+  flex-shrink: 0;
 }
 
 .findings {
@@ -611,4 +645,112 @@
   .content-inner {
     padding: 1.5rem 1rem 3rem;
   }
+}
+
+/* ── Секции в „ML модел“ таба ──────────────────────────────────────────── */
+
+.section-heading {
+  margin: 2rem 0 0.25rem;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.section-note {
+  margin: 0 0 0.85rem;
+  max-width: 68ch;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+
+/* Четирите изхода на класификатора. Верните решения и грешките са в
+   различни цветове, защото точно това е въпросът към тази таблица. */
+.confusion-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.confusion-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 1rem 1.25rem;
+  border-radius: 12px;
+  border-left: 3px solid transparent;
+  background: var(--surface-1);
+}
+
+.confusion-cell.is-correct {
+  border-left-color: var(--fill-success);
+}
+
+.confusion-cell.is-error {
+  border-left-color: var(--fill-danger);
+}
+
+.confusion-value {
+  font-size: 24px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.confusion-label {
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--text-secondary);
+}
+
+/* Таблиците са по-широки от съдържащата ги колона на тесни екрани —
+   скролът е вътре в тях, за да не тръгне цялата страница настрани. */
+.table-scroll {
+  overflow-x: auto;
+  border-radius: 12px;
+  background: var(--surface-1);
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.data-table th,
+.data-table td {
+  padding: 0.6rem 1rem;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.data-table th:first-child,
+.data-table td:first-child {
+  text-align: left;
+  white-space: normal;
+}
+
+.data-table th {
+  font-weight: 600;
+  font-size: 12px;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border);
+}
+
+.data-table tbody tr + tr td {
+  border-top: 1px solid var(--border);
+}
+
+.data-table tbody tr.is-selected {
+  background: var(--bg-accent);
+  font-weight: 600;
+}
+
+.chip {
+  margin-left: 0.5rem;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--fill-accent);
+  color: var(--on-accent);
+  font-size: 11px;
+  font-weight: 600;
 }

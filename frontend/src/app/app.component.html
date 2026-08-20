@@ -118,23 +118,33 @@
           } @else {
             @for (group of groupedFindings(); track group.category; let i = $index) {
               <div class="category-group" [style.animation-delay.ms]="100 + i * 90">
-                <div class="category-head">
+                <button
+                  type="button"
+                  class="category-head"
+                  [class.expanded]="isCategoryExpanded(group.category)"
+                  [attr.aria-expanded]="isCategoryExpanded(group.category)"
+                  (click)="toggleCategory(group.category)"
+                >
+                  <app-icon name="chevron-down" [size]="16" />
                   <app-icon [name]="group.icon" [size]="16" />
                   <span>{{ group.label }} · {{ group.findings.length }} {{ findingsWord(group.findings.length) }}</span>
-                </div>
-                <ul class="findings">
-                  @for (f of group.findings; track f.ruleId + f.evidence) {
-                    <li class="finding severity-{{ f.severity.toLowerCase() }}">
-                      <div class="finding-head">
-                        <span class="rule-id">{{ f.ruleId }}</span>
-                        <span class="severity">{{ severityLabel(f.severity) }}</span>
-                        <span class="score">+{{ f.score }}</span>
-                      </div>
-                      <p class="description">{{ f.description }}</p>
-                      <p class="evidence">{{ f.evidence }}</p>
-                    </li>
-                  }
-                </ul>
+                  <span class="category-score">+{{ group.score }}</span>
+                </button>
+                @if (isCategoryExpanded(group.category)) {
+                  <ul class="findings">
+                    @for (f of group.findings; track f.ruleId + f.evidence) {
+                      <li class="finding severity-{{ f.severity.toLowerCase() }}">
+                        <div class="finding-head">
+                          <span class="rule-id">{{ f.ruleId }}</span>
+                          <span class="severity">{{ severityLabel(f.severity) }}</span>
+                          <span class="score">+{{ f.score }}</span>
+                        </div>
+                        <p class="description">{{ f.description }}</p>
+                        <p class="evidence">{{ f.evidence }}</p>
+                      </li>
+                    }
+                  </ul>
+                }
               </div>
             }
           }
@@ -218,9 +228,139 @@
           <dd>{{ m.testExamples }}</dd>
           <dt>Състав на данните</dt>
           <dd>{{ m.phishingExamples }} фишинг · {{ m.legitimateExamples }} легитимни</dd>
+          @if (m.dataset) {
+            <dt>Корпус-източници</dt>
+            <dd>{{ m.dataset }}</dd>
+          }
         </dl>
       </div>
 
+
+      @if (m.confusion; as cm) {
+        <h3 class="section-heading">Разпределение на решенията</h3>
+        <p class="section-note">
+          Върху {{ m.testExamples }} имейла, отделени преди обучението и невиждани от модела.
+          Процентите отгоре скриват точно тези четири числа.
+        </p>
+        <div class="confusion-grid">
+          <div class="confusion-cell is-correct">
+            <span class="confusion-value">{{ cm.truePositives }}</span>
+            <span class="confusion-label">вярно разпознат фишинг</span>
+          </div>
+          <div class="confusion-cell is-error">
+            <span class="confusion-value">{{ cm.falseNegatives }}</span>
+            <span class="confusion-label">пропуснат фишинг</span>
+          </div>
+          <div class="confusion-cell is-correct">
+            <span class="confusion-value">{{ cm.trueNegatives }}</span>
+            <span class="confusion-label">вярно разпозната легитимна поща</span>
+          </div>
+          <div class="confusion-cell is-error">
+            <span class="confusion-value">{{ cm.falsePositives }}</span>
+            <span class="confusion-label">легитимна, обявена за фишинг</span>
+          </div>
+        </div>
+      }
+
+      @if (m.crossValidation; as cv) {
+        <h3 class="section-heading">Кръстосана проверка</h3>
+        <p class="section-note">
+          Корпусът е разделен на {{ cv.folds }} дяла и обучението е повторено {{ cv.folds }} пъти,
+          всеки път с различен дял за тест. Отклонението показва колко се клати оценката
+          при друго разделяне на същите данни — малко отклонение значи, че резултатът не е късмет.
+        </p>
+        <div class="metric-grid">
+          <div class="metric-card">
+            <span class="metric-label">Accuracy</span>
+            <span class="metric-value">{{ formatPercent(cv.accuracyMean) }}</span>
+            <span class="metric-hint">± {{ formatPercent(cv.accuracyStdDev) }}</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-label">F1 score</span>
+            <span class="metric-value">{{ formatPercent(cv.f1Mean) }}</span>
+            <span class="metric-hint">± {{ formatPercent(cv.f1StdDev) }}</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-label">AUC</span>
+            <span class="metric-value">{{ formatPercent(cv.aucMean) }}</span>
+            <span class="metric-hint">± {{ formatPercent(cv.aucStdDev) }}</span>
+          </div>
+        </div>
+      }
+
+      @if (m.candidates; as candidates) {
+        <h3 class="section-heading">Сравнени алгоритми</h3>
+        <p class="section-note">
+          Всички са обучени и оценени върху едно и също разделяне на данните.
+          Избран е този с най-висок F1.
+        </p>
+        <div class="table-scroll">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Алгоритъм</th>
+                <th>Accuracy</th>
+                <th>Precision</th>
+                <th>Recall</th>
+                <th>F1</th>
+                <th>AUC</th>
+                <th>Обучение</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (candidate of candidates; track candidate.algorithm) {
+                <tr [class.is-selected]="candidate.selected">
+                  <td>
+                    {{ candidate.algorithm }}
+                    @if (candidate.selected) {
+                      <span class="chip">избран</span>
+                    }
+                  </td>
+                  <td>{{ formatPercent(candidate.metrics.accuracy) }}</td>
+                  <td>{{ formatPercent(candidate.metrics.precision) }}</td>
+                  <td>{{ formatPercent(candidate.metrics.recall) }}</td>
+                  <td>{{ formatPercent(candidate.metrics.f1Score) }}</td>
+                  <td>{{ formatPercent(candidate.metrics.areaUnderRocCurve) }}</td>
+                  <td>{{ formatSeconds(candidate.trainingSeconds) }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+
+      @if (m.perSource; as perSource) {
+        <h3 class="section-heading">По корпус-източник</h3>
+        <p class="section-note">
+          Тестовата извадка, разбита по корпуса, от който идват имейлите.
+          Близки стойности значат, че моделът е научил езика на фишинга,
+          а не особеностите на един конкретен корпус.
+        </p>
+        <div class="table-scroll">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Източник</th>
+                <th>Примери</th>
+                <th>Accuracy</th>
+                <th>Уловен фишинг</th>
+                <th>Лъжлива тревога</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (source of perSource; track source.source) {
+                <tr>
+                  <td>{{ source.source }}</td>
+                  <td>{{ source.testExamples }}</td>
+                  <td>{{ formatPercent(source.accuracy) }}</td>
+                  <td>{{ formatRate(source.recall) }}</td>
+                  <td>{{ formatRate(source.falsePositiveRate) }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
       @if (smallDataset()) {
         <div class="model-warning">
           <app-icon name="alert-triangle" [size]="18" />

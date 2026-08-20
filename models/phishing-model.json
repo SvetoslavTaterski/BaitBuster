@@ -1,16 +1,138 @@
 {
-  "TrainedAt": "2026-08-17T14:12:00.9911787+00:00",
-  "Algorithm": "SdcaLogisticRegression",
-  "TotalExamples": 80,
-  "TrainingExamples": 68,
-  "TestExamples": 12,
-  "PhishingExamples": 40,
-  "LegitimateExamples": 40,
+  "TrainedAt": "2026-08-20T10:52:23.3261032+00:00",
+  "Algorithm": "AveragedPerceptron",
+  "TotalExamples": 77141,
+  "TrainingExamples": 61711,
+  "TestExamples": 15430,
+  "PhishingExamples": 37973,
+  "LegitimateExamples": 39168,
   "Metrics": {
-    "Accuracy": 1,
-    "Precision": 1,
-    "Recall": 1,
-    "F1Score": 1,
-    "AreaUnderRocCurve": 1
-  }
+    "Accuracy": 0.9871030460142579,
+    "Precision": 0.9856861457649376,
+    "Recall": 0.9881516587677726,
+    "F1Score": 0.9869173624350799,
+    "AreaUnderRocCurve": 0.9988645885806096
+  },
+  "Confusion": {
+    "TruePositives": 7506,
+    "FalsePositives": 109,
+    "TrueNegatives": 7725,
+    "FalseNegatives": 90
+  },
+  "CrossValidation": {
+    "Folds": 5,
+    "AccuracyMean": 0.986556045788466,
+    "AccuracyStdDev": 0.0005180545561941532,
+    "F1Mean": 0.9863577590671471,
+    "F1StdDev": 0.00046882164224005884,
+    "AucMean": 0.9988641307761027,
+    "AucStdDev": 0.00018559849279099508
+  },
+  "Candidates": [
+    {
+      "Algorithm": "AveragedPerceptron",
+      "Metrics": {
+        "Accuracy": 0.9875567077122489,
+        "Precision": 0.9854445318646735,
+        "Recall": 0.9893364928909952,
+        "F1Score": 0.987386677177769,
+        "AreaUnderRocCurve": 0.9988686049105028
+      },
+      "TrainingSeconds": 3.7967167,
+      "Selected": true
+    },
+    {
+      "Algorithm": "FastTree",
+      "Metrics": {
+        "Accuracy": 0.9813350615683732,
+        "Precision": 0.9759051836415733,
+        "Recall": 0.9864402317008952,
+        "F1Score": 0.9811444284404871,
+        "AreaUnderRocCurve": 0.9983431714930516
+      },
+      "TrainingSeconds": 101.7866982,
+      "Selected": false
+    },
+    {
+      "Algorithm": "LbfgsLogisticRegression",
+      "Metrics": {
+        "Accuracy": 0.9675307841866494,
+        "Precision": 0.9628180039138943,
+        "Recall": 0.9715639810426541,
+        "F1Score": 0.9671712207587969,
+        "AreaUnderRocCurve": 0.994849989574347
+      },
+      "TrainingSeconds": 28.206486,
+      "Selected": false
+    },
+    {
+      "Algorithm": "SdcaLogisticRegression",
+      "Metrics": {
+        "Accuracy": 0.9644847699287104,
+        "Precision": 0.9592129267657024,
+        "Recall": 0.9690626645602949,
+        "F1Score": 0.964112639161755,
+        "AreaUnderRocCurve": 0.993982865630877
+      },
+      "TrainingSeconds": 5.5395842,
+      "Selected": false
+    },
+    {
+      "Algorithm": "LinearSvm",
+      "Metrics": {
+        "Accuracy": 0.9501620220349968,
+        "Precision": 0.9307255520504731,
+        "Recall": 0.9710373880989994,
+        "F1Score": 0.9504542233103537,
+        "AreaUnderRocCurve": 0.9893032447374651
+      },
+      "TrainingSeconds": 0.3941835,
+      "Selected": false
+    }
+  ],
+  "PerSource": [
+    {
+      "Source": "CEAS_08",
+      "TestExamples": 6866,
+      "Accuracy": 0.992572094378095,
+      "Recall": 0.9947414548641542,
+      "FalsePositiveRate": 0.009584664536741214
+    },
+    {
+      "Source": "Enron",
+      "TestExamples": 5881,
+      "Accuracy": 0.9836762455364734,
+      "Recall": 0.9881635581061693,
+      "FalsePositiveRate": 0.020368574199806012
+    },
+    {
+      "Source": "SpamAssassin",
+      "TestExamples": 1152,
+      "Accuracy": 0.9739583333333334,
+      "Recall": 0.9311377245508982,
+      "FalsePositiveRate": 0.008557457212713936
+    },
+    {
+      "Source": "Nigerian_Fraud",
+      "TestExamples": 651,
+      "Accuracy": 0.9953917050691244,
+      "Recall": 0.9953917050691244,
+      "FalsePositiveRate": null
+    },
+    {
+      "Source": "Ling",
+      "TestExamples": 572,
+      "Accuracy": 0.9842657342657343,
+      "Recall": 0.967391304347826,
+      "FalsePositiveRate": 0.0125
+    },
+    {
+      "Source": "Nazario",
+      "TestExamples": 308,
+      "Accuracy": 0.9675324675324676,
+      "Recall": 0.9675324675324676,
+      "FalsePositiveRate": null
+    }
+  ],
+  "Dataset": "CEAS_08, Enron, Ling, Nazario, Nigerian_Fraud, SpamAssassin"
 }

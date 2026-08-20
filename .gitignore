@@ -63,3 +63,7 @@ CodeCoverage/
 *.VisualState.xml
 TestResult.xml
 nunit-*.xml
+
+# Raw and processed training corpora (downloaded, not versioned)
+data/raw/
+data/processed/

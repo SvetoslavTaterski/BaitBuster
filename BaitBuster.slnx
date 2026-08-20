@@ -7,6 +7,8 @@
     <Project Path="tests/BaitBuster.Tests/BaitBuster.Tests.csproj" />
   </Folder>
   <Folder Name="/tools/">
+    <Project Path="tools/BaitBuster.CorpusEval/BaitBuster.CorpusEval.csproj" />
+    <Project Path="tools/BaitBuster.DataPrep/BaitBuster.DataPrep.csproj" />
     <Project Path="tools/BaitBuster.MlTraining/BaitBuster.MlTraining.csproj" />
   </Folder>
 </Solution>

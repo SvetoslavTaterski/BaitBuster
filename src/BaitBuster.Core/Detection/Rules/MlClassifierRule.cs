@@ -19,8 +19,13 @@ public sealed class MlClassifierRule(PredictionEnginePool<EmailData, EmailPredic
 
     public IEnumerable<Finding> Evaluate(ParsedEmail email)
     {
-        var text = $"{email.Subject}\n{email.BodyText}".Trim();
-        if (text.Length == 0)
+        // Същата обработка, през която мина всеки тренировъчен пример.
+        // Ако тук текстът се подаде суров, моделът вижда думи, каквито не е
+        // срещал при обучението (HTML етикети, различни изписвания на URL-и)
+        // и увереността му става безсмислена.
+        var text = EmailTextNormalizer.Normalize(email.Subject, email.BodyText);
+
+        if (!EmailTextNormalizer.IsUsable(text))
             yield break;
 
         var prediction = engine.Predict(new EmailData { Text = text });

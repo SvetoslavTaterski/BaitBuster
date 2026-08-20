@@ -21,7 +21,7 @@ const CATEGORY_ICONS: Record<string, IconName> = {
   Ml: 'cpu'
 };
 const CATEGORY_LABELS: Record<string, string> = {
-  Headers: 'Заглавки',
+  Headers: 'Заглавия',
   Urls: 'Линкове',
   Content: 'Съдържание',
   Attachments: 'Прикачени файлове',
@@ -32,6 +32,7 @@ interface FindingGroup {
   category: string;
   label: string;
   icon: IconName;
+  score: number;
   findings: Finding[];
 }
 
@@ -88,13 +89,33 @@ export class AppComponent {
 
     return [...byCategory.keys()]
       .sort((a, b) => CATEGORY_ORDER.indexOf(a) - CATEGORY_ORDER.indexOf(b))
-      .map((category) => ({
-        category,
-        label: CATEGORY_LABELS[category] ?? category,
-        icon: CATEGORY_ICONS[category] ?? 'alert-triangle',
-        findings: byCategory.get(category)!
-      }));
+      .map((category) => {
+        const groupFindings = byCategory.get(category)!;
+        return {
+          category,
+          label: CATEGORY_LABELS[category] ?? category,
+          icon: CATEGORY_ICONS[category] ?? 'alert-triangle',
+          score: groupFindings.reduce((sum, f) => sum + f.score, 0),
+          findings: groupFindings
+        };
+      });
   });
+
+  /** Категориите са свити по подразбиране — обобщението в заглавния ред
+   *  (брой находки и принос към score-а) стига, за да се реши коя да се отвори. */
+  expandedCategories = signal<ReadonlySet<string>>(new Set());
+
+  isCategoryExpanded(category: string): boolean {
+    return this.expandedCategories().has(category);
+  }
+
+  toggleCategory(category: string): void {
+    this.expandedCategories.update((current) => {
+      const next = new Set(current);
+      if (!next.delete(category)) next.add(category);
+      return next;
+    });
+  }
 
   constructor(private readonly http: HttpClient) {
     this.applyTheme(this.theme());
@@ -191,6 +212,7 @@ export class AppComponent {
     this.http.post<AnalysisReport>(`${API_BASE_URL}/api/analysis/upload`, formData).subscribe({
       next: (report) => {
         this.report.set(report);
+        this.expandedCategories.set(new Set());
         this.loading.set(false);
         this.animateScoreTo(report.riskScore);
       },
@@ -235,6 +257,7 @@ export class AppComponent {
         this.selectedFile.set(null);
         this.error.set(null);
         this.report.set(detail);
+        this.expandedCategories.set(new Set());
         this.animateScoreTo(detail.riskScore);
         this.viewingHistoryItem.set(true);
         this.activeView.set('analyze');
@@ -263,6 +286,15 @@ export class AppComponent {
         this.modelLoading.set(false);
       }
     });
+  }
+
+  /** Дял 0–1 в проценти; „—“ когато няма как да се сметне (нула примера от този клас). */
+  formatRate(value: number | null): string {
+    return value === null ? '—' : this.formatPercent(value);
+  }
+
+  formatSeconds(value: number): string {
+    return value < 1 ? `${Math.round(value * 1000)} мс` : `${value.toFixed(1)} с`;
   }
 
   formatPercent(value: number): string {

@@ -50,4 +50,45 @@ export interface ModelInfo {
   phishingExamples: number;
   legitimateExamples: number;
   metrics: ModelMetrics;
+  confusion: ConfusionMatrix | null;
+  crossValidation: CrossValidationSummary | null;
+  candidates: AlgorithmResult[] | null;
+  perSource: SourceAccuracy[] | null;
+  dataset: string | null;
+}
+
+/** Разпределение на решенията върху тестовата извадка. */
+export interface ConfusionMatrix {
+  truePositives: number;
+  falsePositives: number;
+  trueNegatives: number;
+  falseNegatives: number;
+}
+
+/** Резултат от k-кратна кръстосана проверка. */
+export interface CrossValidationSummary {
+  folds: number;
+  accuracyMean: number;
+  accuracyStdDev: number;
+  f1Mean: number;
+  f1StdDev: number;
+  aucMean: number;
+  aucStdDev: number;
+}
+
+/** Един изпробван алгоритъм от сравнението. */
+export interface AlgorithmResult {
+  algorithm: string;
+  metrics: ModelMetrics;
+  trainingSeconds: number;
+  selected: boolean;
+}
+
+/** Точност върху частта от теста, дошла от един корпус. */
+export interface SourceAccuracy {
+  source: string;
+  testExamples: number;
+  accuracy: number;
+  recall: number | null;
+  falsePositiveRate: number | null;
 }
