@@ -15,7 +15,9 @@ export type IconName =
   | 'moon'
   | 'x'
   | 'cpu'
-  | 'chevron-down';
+  | 'chevron-down'
+  | 'list-check'
+  | 'chart-pie';
 
 @Component({
   selector: 'app-icon',
@@ -97,6 +99,18 @@ export type IconName =
         }
         @case ('chevron-down') {
           <polyline points="6,9 12,15 18,9" />
+        }
+        @case ('chart-pie') {
+          <path d="M12 3a9 9 0 1 0 9 9h-9Z" />
+          <path d="M15 3.5A9 9 0 0 1 20.5 9H15Z" />
+        }
+        @case ('list-check') {
+          <polyline points="3,6 4.5,7.5 7,5" />
+          <polyline points="3,12 4.5,13.5 7,11" />
+          <polyline points="3,18 4.5,19.5 7,17" />
+          <line x1="10" y1="6" x2="21" y2="6" />
+          <line x1="10" y1="12" x2="21" y2="12" />
+          <line x1="10" y1="18" x2="21" y2="18" />
         }
         @case ('cpu') {
           <rect x="6" y="6" width="12" height="12" rx="1.5" />

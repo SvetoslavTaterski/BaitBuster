@@ -33,6 +33,35 @@ export interface HistoryDetail extends AnalysisReport {
   id: number;
 }
 
+export interface NamedCount {
+  name: string;
+  count: number;
+}
+
+export interface DailyCount {
+  date: string;
+  count: number;
+}
+
+export interface Statistics {
+  totalAnalyses: number;
+  averageRiskScore: number;
+  phishingCount: number;
+  suspiciousCount: number;
+  legitimateCount: number;
+  findingsByCategory: NamedCount[];
+  topRules: NamedCount[];
+  lastDays: DailyCount[];
+}
+
+export interface RuleDescription {
+  ruleId: string;
+  name: string;
+  category: string;
+  description: string;
+  maxScore: number;
+}
+
 export interface ModelMetrics {
   accuracy: number;
   precision: number;

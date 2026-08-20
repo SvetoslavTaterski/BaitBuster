@@ -1,6 +1,8 @@
 import { Component, computed, signal } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { AnalysisReport, Finding, HistoryDetail, HistoryListItem, ModelInfo } from './analysis.model';
+import {
+  AnalysisReport, Finding, HistoryDetail, HistoryListItem, ModelInfo, RuleDescription, Statistics
+} from './analysis.model';
 import { IconComponent, IconName } from './icon.component';
 
 const API_BASE_URL = 'http://localhost:5289';
@@ -10,7 +12,7 @@ const GAUGE_CIRCUMFERENCE = 2 * Math.PI * GAUGE_RADIUS;
 type Theme = 'light' | 'dark';
 const THEME_STORAGE_KEY = 'baitbuster-theme';
 
-type View = 'analyze' | 'history' | 'model';
+type View = 'analyze' | 'history' | 'statistics' | 'rules' | 'model';
 
 const CATEGORY_ORDER = ['Headers', 'Urls', 'Content', 'Attachments', 'Ml'];
 const CATEGORY_ICONS: Record<string, IconName> = {
@@ -62,6 +64,24 @@ export class AppComponent {
   modelInfo = signal<ModelInfo | null>(null);
   modelLoading = signal(false);
   modelError = signal<string | null>(null);
+
+  rules = signal<RuleDescription[]>([]);
+  rulesLoading = signal(false);
+  rulesError = signal<string | null>(null);
+
+  statistics = signal<Statistics | null>(null);
+  statisticsLoading = signal(false);
+  statisticsError = signal<string | null>(null);
+
+  /** Най-голямата дневна стойност — мащабът, спрямо който се чертаят стълбовете. */
+  maxDailyCount = computed(() =>
+    Math.max(1, ...(this.statistics()?.lastDays ?? []).map((d) => d.count)));
+
+  maxCategoryCount = computed(() =>
+    Math.max(1, ...(this.statistics()?.findingsByCategory ?? []).map((c) => c.count)));
+
+  maxRuleCount = computed(() =>
+    Math.max(1, ...(this.statistics()?.topRules ?? []).map((r) => r.count)));
 
   /** Под този брой примери метриките не са представителни.
    *  Сравнението стои тук, а не в темплейта — „<" в условие на @if
@@ -266,6 +286,68 @@ export class AppComponent {
         this.historyError.set('Неуспешно зареждане на записа.');
       }
     });
+  }
+
+  showStatistics(): void {
+    this.activeView.set('statistics');
+    this.statisticsLoading.set(true);
+    this.statisticsError.set(null);
+
+    // За разлика от правилата и модела тук не кешираме — числата се менят
+    // с всеки нов анализ, а изгледът трябва да ги отразява.
+    this.http.get<Statistics>(`${API_BASE_URL}/api/statistics`).subscribe({
+      next: (stats) => {
+        this.statistics.set(stats);
+        this.statisticsLoading.set(false);
+      },
+      error: () => {
+        this.statisticsError.set('Статистиката не може да бъде заредена.');
+        this.statisticsLoading.set(false);
+      }
+    });
+  }
+
+  /** Дял в проценти спрямо общия брой анализи. */
+  sharePercent(count: number): number {
+    const total = this.statistics()?.totalAnalyses ?? 0;
+    return total === 0 ? 0 : Math.round((count / total) * 100);
+  }
+
+  barWidth(count: number, max: number): number {
+    return Math.round((count / max) * 100);
+  }
+
+  formatDay(iso: string): string {
+    const date = new Date(iso);
+    return `${String(date.getDate()).padStart(2, '0')}.${String(date.getMonth() + 1).padStart(2, '0')}`;
+  }
+
+  showRules(): void {
+    this.activeView.set('rules');
+
+    if (this.rules().length > 0) return;
+
+    this.rulesLoading.set(true);
+    this.rulesError.set(null);
+
+    this.http.get<RuleDescription[]>(`${API_BASE_URL}/api/rules`).subscribe({
+      next: (rules) => {
+        this.rules.set(rules);
+        this.rulesLoading.set(false);
+      },
+      error: () => {
+        this.rulesError.set('Списъкът с правила не може да бъде зареден.');
+        this.rulesLoading.set(false);
+      }
+    });
+  }
+
+  categoryLabel(category: string): string {
+    return CATEGORY_LABELS[category] ?? category;
+  }
+
+  categoryIcon(category: string): IconName {
+    return CATEGORY_ICONS[category] ?? 'alert-triangle';
   }
 
   showModel(): void {

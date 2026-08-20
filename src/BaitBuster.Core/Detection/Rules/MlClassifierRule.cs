@@ -13,6 +13,15 @@ public sealed class MlClassifierRule(PredictionEnginePool<EmailData, EmailPredic
     : IDetectionRule
 {
     public string RuleId => "ML-001";
+    public string Name => "ML класификатор";
+    public string Category => "Ml";
+    public int MaxScore => 30;
+
+    public string Description =>
+        "Обучен модел, който оценява текста на имейла като цяло. За разлика от " +
+        "останалите правила тук няма ръчно написани условия — закономерностите " +
+        "са извлечени от тренировъчните примери. Докладва само при увереност " +
+        "над 60%, а приносът към score-а расте с нея.";
 
     /// <summary>Под този праг на увереност не докладваме нищо.</summary>
     private const float ReportThreshold = 0.60f;

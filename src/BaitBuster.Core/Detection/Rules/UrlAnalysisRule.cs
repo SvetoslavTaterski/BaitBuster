@@ -10,6 +10,14 @@ namespace BaitBuster.Core.Detection.Rules;
 public sealed partial class UrlAnalysisRule : IDetectionRule
 {
     public string RuleId => "URL-001";
+    public string Name => "Анализ на линковете";
+    public string Category => "Urls";
+    public int MaxScore => 25;
+
+    public string Description =>
+        "Проверява всеки линк в имейла: IP адрес вместо домейн, съкратени URL-и, " +
+        "разминаване между показания текст и реалната дестинация, както и " +
+        "нешифрована HTTP връзка.";
 
     private static readonly HashSet<string> Shorteners = new(StringComparer.OrdinalIgnoreCase)
     {

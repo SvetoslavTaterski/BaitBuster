@@ -10,6 +10,19 @@ namespace BaitBuster.Core.Detection;
 public interface IDetectionRule
 {
     string RuleId { get; }
+
+    /// <summary>Кратко име на правилото за човешка употреба.</summary>
+    string Name { get; }
+
+    /// <summary>Категорията, под която попадат находките му (Headers, Urls, Content, Ml).</summary>
+    string Category { get; }
+
+    /// <summary>Какво проверява правилото и защо това е признак за фишинг.</summary>
+    string Description { get; }
+
+    /// <summary>Най-големият възможен принос към risk score-а от едно откритие.</summary>
+    int MaxScore { get; }
+
     IEnumerable<Finding> Evaluate(ParsedEmail email);
 }
 

@@ -8,18 +8,33 @@
     </div>
 
     <nav class="nav">
-      <span class="nav-item" [class.active]="activeView() === 'analyze'" (click)="showAnalyze()">
-        <app-icon name="upload" [size]="18" />
-        Анализ
-      </span>
-      <span class="nav-item" [class.active]="activeView() === 'history'" (click)="showHistory()">
-        <app-icon name="clock" [size]="18" />
-        История
-      </span>
-      <span class="nav-item" [class.active]="activeView() === 'model'" (click)="showModel()">
-        <app-icon name="chart-bar" [size]="18" />
-        ML модел
-      </span>
+      <div class="nav-group">
+        <span class="nav-group-title">Анализ</span>
+        <span class="nav-item" [class.active]="activeView() === 'analyze'" (click)="showAnalyze()">
+          <app-icon name="upload" [size]="18" />
+          Нов анализ
+        </span>
+        <span class="nav-item" [class.active]="activeView() === 'history'" (click)="showHistory()">
+          <app-icon name="clock" [size]="18" />
+          История
+        </span>
+        <span class="nav-item" [class.active]="activeView() === 'statistics'" (click)="showStatistics()">
+          <app-icon name="chart-pie" [size]="18" />
+          Статистика
+        </span>
+      </div>
+
+      <div class="nav-group">
+        <span class="nav-group-title">Система</span>
+        <span class="nav-item" [class.active]="activeView() === 'rules'" (click)="showRules()">
+          <app-icon name="list-check" [size]="18" />
+          Правила
+        </span>
+        <span class="nav-item" [class.active]="activeView() === 'model'" (click)="showModel()">
+          <app-icon name="chart-bar" [size]="18" />
+          ML модел
+        </span>
+      </div>
     </nav>
 
     <button
@@ -150,6 +165,162 @@
           }
         </div>
       </section>
+    }
+   } @else if (activeView() === 'statistics') {
+    <h2 class="page-title">Статистика</h2>
+    <p class="page-subtitle">Обобщение върху всички запазени анализи.</p>
+
+    @if (statisticsLoading()) {
+      <p class="page-subtitle">Зареждане…</p>
+    } @else if (statisticsError()) {
+      <p class="error">{{ statisticsError() }}</p>
+    } @else {
+      @if (statistics(); as s) {
+        @if (s.totalAnalyses === 0) {
+          <p class="no-findings" style="color: var(--text-muted)">
+            Все още няма анализирани имейли, от които да се смята статистика.
+          </p>
+        } @else {
+          <div class="metric-grid">
+            <div class="metric-card">
+              <span class="metric-label">Анализирани имейли</span>
+              <span class="metric-value">{{ s.totalAnalyses }}</span>
+            </div>
+            <div class="metric-card">
+              <span class="metric-label">Среден risk score</span>
+              <span class="metric-value">{{ s.averageRiskScore.toFixed(1) }}</span>
+            </div>
+            <div class="metric-card">
+              <span class="metric-label">Открит фишинг</span>
+              <span class="metric-value" style="color: var(--text-danger)">{{ s.phishingCount }}</span>
+            </div>
+            <div class="metric-card">
+              <span class="metric-label">Легитимни</span>
+              <span class="metric-value" style="color: var(--text-success)">{{ s.legitimateCount }}</span>
+            </div>
+          </div>
+
+          <section class="chart-block">
+            <h3 class="chart-title">Разпределение на присъдите</h3>
+            <div class="bar-rows">
+              <div class="bar-row">
+                <span class="bar-label">Фишинг</span>
+                <span class="bar-track">
+                  <span class="bar-fill verdict-phishing"
+                        [style.width.%]="sharePercent(s.phishingCount)"></span>
+                </span>
+                <span class="bar-value">{{ s.phishingCount }} · {{ sharePercent(s.phishingCount) }}%</span>
+              </div>
+              <div class="bar-row">
+                <span class="bar-label">Подозрителен</span>
+                <span class="bar-track">
+                  <span class="bar-fill verdict-suspicious"
+                        [style.width.%]="sharePercent(s.suspiciousCount)"></span>
+                </span>
+                <span class="bar-value">{{ s.suspiciousCount }} · {{ sharePercent(s.suspiciousCount) }}%</span>
+              </div>
+              <div class="bar-row">
+                <span class="bar-label">Легитимен</span>
+                <span class="bar-track">
+                  <span class="bar-fill verdict-legitimate"
+                        [style.width.%]="sharePercent(s.legitimateCount)"></span>
+                </span>
+                <span class="bar-value">{{ s.legitimateCount }} · {{ sharePercent(s.legitimateCount) }}%</span>
+              </div>
+            </div>
+          </section>
+
+          @if (s.findingsByCategory.length > 0) {
+            <section class="chart-block">
+              <h3 class="chart-title">Находки по категория</h3>
+              <div class="bar-rows">
+                @for (category of s.findingsByCategory; track category.name) {
+                  <div class="bar-row">
+                    <span class="bar-label">{{ categoryLabel(category.name) }}</span>
+                    <span class="bar-track">
+                      <span class="bar-fill accent"
+                            [style.width.%]="barWidth(category.count, maxCategoryCount())"></span>
+                    </span>
+                    <span class="bar-value">{{ category.count }}</span>
+                  </div>
+                }
+              </div>
+            </section>
+          }
+
+          @if (s.topRules.length > 0) {
+            <section class="chart-block">
+              <h3 class="chart-title">Най-често задействани правила</h3>
+              <div class="bar-rows">
+                @for (rule of s.topRules; track rule.name) {
+                  <div class="bar-row">
+                    <span class="bar-label mono">{{ rule.name }}</span>
+                    <span class="bar-track">
+                      <span class="bar-fill accent"
+                            [style.width.%]="barWidth(rule.count, maxRuleCount())"></span>
+                    </span>
+                    <span class="bar-value">{{ rule.count }}</span>
+                  </div>
+                }
+              </div>
+            </section>
+          }
+
+          <section class="chart-block">
+            <h3 class="chart-title">Анализи през последните 7 дни</h3>
+            <div class="day-chart">
+              @for (day of s.lastDays; track day.date) {
+                <div class="day-column">
+                  <span class="day-count">{{ day.count }}</span>
+                  <span class="day-bar-track">
+                    <span class="day-bar" [style.height.%]="barWidth(day.count, maxDailyCount())"></span>
+                  </span>
+                  <span class="day-label">{{ formatDay(day.date) }}</span>
+                </div>
+              }
+            </div>
+          </section>
+        }
+      }
+    }
+   } @else if (activeView() === 'rules') {
+    <h2 class="page-title">Детекционни правила</h2>
+    <p class="page-subtitle">
+      Всяко правило проверява различен аспект на имейла и добавя точки към общия risk score.
+    </p>
+
+    @if (rulesLoading()) {
+      <p class="page-subtitle">Зареждане…</p>
+    } @else if (rulesError()) {
+      <p class="error">{{ rulesError() }}</p>
+    } @else {
+      <ul class="rule-list">
+        @for (rule of rules(); track rule.ruleId) {
+          <li class="rule-card">
+            <div class="rule-head">
+              <span class="rule-card-id">{{ rule.ruleId }}</span>
+              <span class="rule-name">{{ rule.name }}</span>
+              <span class="rule-max-score">до +{{ rule.maxScore }}</span>
+            </div>
+            <p class="rule-description">{{ rule.description }}</p>
+            <span class="rule-category">
+              <app-icon [name]="categoryIcon(rule.category)" [size]="14" />
+              {{ categoryLabel(rule.category) }}
+            </span>
+          </li>
+        }
+      </ul>
+
+      <div class="model-details">
+        <dl class="model-facts">
+          <dt>Праг за „Фишинг"</dt>
+          <dd>risk score 60 и нагоре</dd>
+          <dt>Праг за „Подозрителен"</dt>
+          <dd>risk score между 30 и 59</dd>
+          <dt>Максимален score</dt>
+          <dd>100 (сумата се ограничава дотук)</dd>
+        </dl>
+      </div>
     }
    } @else if (activeView() === 'history') {
     <h2 class="page-title">История на анализите</h2>

@@ -10,6 +10,14 @@ namespace BaitBuster.Core.Detection.Rules;
 public sealed class UrgencyContentRule : IDetectionRule
 {
     public string RuleId => "CNT-001";
+    public string Name => "Език на спешност и натиск";
+    public string Category => "Content";
+    public int MaxScore => 10;
+
+    public string Description =>
+        "Търси в темата и тялото фрази, характерни за социалното инженерство — " +
+        "заплаха за спиране на акаунта, кратък срок, искане за потвърждаване на " +
+        "самоличност. Списъкът покрива английски и български.";
 
     private static readonly string[] UrgencyPhrases =
     [

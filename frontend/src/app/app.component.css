@@ -46,7 +46,23 @@
 .nav {
   display: flex;
   flex-direction: column;
+  gap: 1.5rem;
+}
+
+.nav-group {
+  display: flex;
+  flex-direction: column;
   gap: 4px;
+}
+
+.nav-group-title {
+  padding: 0 10px;
+  margin-bottom: 2px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
 }
 
 .nav-item {
@@ -279,7 +295,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .dashboard, .category-group, .spinner, .gauge-value, .category-head app-icon:first-child {
+  .dashboard, .category-group, .spinner, .gauge-value, .category-head app-icon:first-child,
+  .bar-fill, .day-bar {
     animation: none !important;
     transition: none !important;
   }
@@ -374,6 +391,175 @@
 .category-group {
   opacity: 0;
   animation: reveal-up 0.35s ease both;
+}
+
+.chart-block {
+  background: var(--surface-1);
+  border-radius: 12px;
+  padding: 1.25rem;
+}
+
+.chart-title {
+  margin: 0 0 1rem;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.bar-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.bar-row {
+  display: grid;
+  grid-template-columns: minmax(0, 140px) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+}
+
+.bar-label {
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bar-label.mono {
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+.bar-track {
+  height: 10px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  overflow: hidden;
+}
+
+.bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.4s ease;
+}
+
+.bar-fill.accent { background: var(--fill-accent); }
+.bar-fill.verdict-phishing { background: var(--fill-danger); }
+.bar-fill.verdict-suspicious { background: var(--fill-warning); }
+.bar-fill.verdict-legitimate { background: var(--fill-success); }
+
+.bar-value {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.day-chart {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 8px;
+  align-items: end;
+}
+
+.day-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.day-count {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+/* Пистата държи постоянна височина, за да са сравними стълбовете
+   и дните без анализи да не свиват реда. */
+.day-bar-track {
+  display: flex;
+  align-items: flex-end;
+  width: 100%;
+  height: 90px;
+  background: var(--surface-2);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.day-bar {
+  width: 100%;
+  min-height: 2px;
+  background: var(--fill-accent);
+  border-radius: 6px;
+  transition: height 0.4s ease;
+}
+
+.day-label {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.rule-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.rule-card {
+  background: var(--surface-1);
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+}
+
+.rule-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.rule-card-id {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-accent);
+  background: var(--bg-accent);
+  padding: 2px 8px;
+  border-radius: var(--radius);
+  flex-shrink: 0;
+}
+
+.rule-name {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.rule-max-score {
+  margin-left: auto;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+.rule-description {
+  margin: 0 0 10px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+
+.rule-category {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-muted);
 }
 
 .metric-grid {
@@ -633,8 +819,19 @@
     border-bottom: 1px solid var(--border);
   }
 
+  /* В тесен изглед менюто е една лента — заглавията на групите
+     биха отнели повече място, отколкото подреждат. */
   .nav {
     flex-direction: row;
+    gap: 1rem;
+  }
+
+  .nav-group {
+    flex-direction: row;
+  }
+
+  .nav-group-title {
+    display: none;
   }
 
   .theme-toggle {

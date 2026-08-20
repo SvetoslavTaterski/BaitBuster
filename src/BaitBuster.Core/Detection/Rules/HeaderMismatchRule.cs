@@ -10,6 +10,14 @@ namespace BaitBuster.Core.Detection.Rules;
 public sealed class HeaderMismatchRule : IDetectionRule
 {
     public string RuleId => "HDR-001";
+    public string Name => "Несъответствия в адресните header-и";
+    public string Category => "Headers";
+    public int MaxScore => 25;
+
+    public string Description =>
+        "Сравнява From с Reply-To и Return-Path — различен домейн означава, че " +
+        "отговорите или доставката отиват другаде. Проверява и резултата от " +
+        "SPF, DKIM и DMARC, ако приемащият сървър го е записал в имейла.";
 
     public IEnumerable<Finding> Evaluate(ParsedEmail email)
     {
