@@ -1,7 +1,7 @@
 using BaitBuster.Core.Detection.Ml;
 using FluentAssertions;
 
-namespace BaitBuster.Tests;
+namespace BaitBuster.Tests.Detection.Ml;
 
 /// <summary>
 /// Нормализаторът стои между корпуса и модела и се вика както при обучение,
@@ -12,7 +12,7 @@ namespace BaitBuster.Tests;
 public class EmailTextNormalizerTests
 {
     [Fact]
-    public void Премахва_html_и_оставя_видимия_текст()
+    public void StripsHtmlAndKeepsVisibleText()
     {
         var result = EmailTextNormalizer.Normalize(
             "Важно", "<p>Вашият <b>акаунт</b> е блокиран</p>");
@@ -23,7 +23,7 @@ public class EmailTextNormalizerTests
     }
 
     [Fact]
-    public void Изхвърля_съдържанието_на_script_и_style()
+    public void DropsScriptAndStyleContent()
     {
         var result = EmailTextNormalizer.Normalize(
             null, "<style>.a{color:red}</style><script>alert(1)</script>Здравей");
@@ -32,7 +32,7 @@ public class EmailTextNormalizerTests
     }
 
     [Fact]
-    public void Заменя_линкове_адреси_и_суми_със_заместители()
+    public void ReplacesUrlsEmailsAndAmountsWithPlaceholders()
     {
         var result = EmailTextNormalizer.Normalize(
             null, "Пишете на support@paypal-secure.tk или отворете https://evil.example/login за $250");
@@ -44,7 +44,7 @@ public class EmailTextNormalizerTests
     }
 
     [Fact]
-    public void Декодира_html_същности()
+    public void DecodesHtmlEntities()
     {
         var result = EmailTextNormalizer.Normalize(null, "Tom &amp; Jerry &mdash; среща");
 
@@ -54,7 +54,7 @@ public class EmailTextNormalizerTests
     }
 
     [Fact]
-    public void Изравнява_токенизацията_между_корпусите()
+    public void NormalizesTokenizationAcrossCorpora()
     {
         // Enron и Ling са публикувани с отделена пунктуация, останалите не са.
         // След нормализация двата варианта трябва да съвпаднат, иначе моделът
@@ -66,7 +66,7 @@ public class EmailTextNormalizerTests
     }
 
     [Fact]
-    public void Не_пропуска_табулации_и_нови_редове_защото_корпусът_е_tsv()
+    public void RemovesTabsAndNewlinesBecauseCorpusIsTsv()
     {
         var result = EmailTextNormalizer.Normalize("Тема\tс таб", "тяло\nна\rдва реда");
 
@@ -76,7 +76,7 @@ public class EmailTextNormalizerTests
     }
 
     [Fact]
-    public void Реже_прекалено_дългите_съобщения()
+    public void TruncatesOverlyLongMessages()
     {
         var result = EmailTextNormalizer.Normalize(null, new string('a', EmailTextNormalizer.MaxLength * 3));
 
@@ -88,7 +88,7 @@ public class EmailTextNormalizerTests
     [InlineData("")]
     [InlineData("   ")]
     [InlineData("<p></p>")]
-    public void Празният_вход_дава_неизползваем_резултат(string? body)
+    public void EmptyInputIsNotUsable(string? body)
     {
         var result = EmailTextNormalizer.Normalize(null, body);
 
@@ -96,7 +96,7 @@ public class EmailTextNormalizerTests
     }
 
     [Fact]
-    public void Кратките_съобщения_не_стигат_за_преценка()
+    public void ShortMessagesAreNotUsable()
     {
         EmailTextNormalizer.IsUsable(EmailTextNormalizer.Normalize(null, "ok thanks")).Should().BeFalse();
         EmailTextNormalizer.IsUsable(EmailTextNormalizer.Normalize(
