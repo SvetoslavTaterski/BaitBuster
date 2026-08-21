@@ -393,6 +393,46 @@
   animation: reveal-up 0.35s ease both;
 }
 
+.raw-input-block {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.raw-input {
+  width: 100%;
+  resize: vertical;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
+  background: var(--surface-1);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.raw-input:focus {
+  outline: none;
+  border-color: var(--fill-accent);
+}
+
+.raw-input:disabled {
+  opacity: 0.6;
+}
+
+.raw-input-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.raw-input-hint {
+  margin-right: auto;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
 .chart-block {
   background: var(--surface-1);
   border-radius: 12px;

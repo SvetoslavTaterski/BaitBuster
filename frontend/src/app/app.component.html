@@ -14,6 +14,10 @@
           <app-icon name="upload" [size]="18" />
           Нов анализ
         </span>
+        <span class="nav-item" [class.active]="activeView() === 'manual'" (click)="showManual()">
+          <app-icon name="pencil" [size]="18" />
+          Ръчен вход
+        </span>
         <span class="nav-item" [class.active]="activeView() === 'history'" (click)="showHistory()">
           <app-icon name="clock" [size]="18" />
           История
@@ -94,78 +98,51 @@
       }
     </div>
 
-    @if (error()) {
-      <p class="error">{{ error() }}</p>
-    }
+    <ng-container [ngTemplateOutlet]="analysisResult" />
+   } @else if (activeView() === 'manual') {
+    <h2 class="page-title">Ръчен вход</h2>
+    <p class="page-subtitle">
+      Поставете суровото съдържание на имейла (header-и и тяло), ако нямате .eml файл.
+    </p>
 
-    @if (report(); as r) {
-      <section class="dashboard">
-        <div class="summary">
-          <div class="gauge">
-            <svg width="88" height="88">
-              <circle cx="44" cy="44" r="38" class="gauge-track" />
-              <circle
-                cx="44" cy="44" r="38"
-                class="gauge-value verdict-{{ r.verdict.toLowerCase() }}"
-                [style.stroke-dasharray]="gaugeCircumference"
-                [style.stroke-dashoffset]="gaugeOffset()"
-              />
-            </svg>
-            <span class="gauge-score">{{ displayedScore() }}</span>
-          </div>
+    <div class="raw-input-block">
+      <textarea
+        class="raw-input"
+        rows="14"
+        spellcheck="false"
+        placeholder="From: sender@example.com&#10;Subject: Тема на съобщението&#10;&#10;Тяло на имейла…"
+        [value]="rawInput()"
+        (input)="onRawInput($event)"
+        [disabled]="loading()"
+      ></textarea>
 
-          <span class="verdict-badge verdict-{{ r.verdict.toLowerCase() }}">
-            <app-icon [name]="verdictIcon(r.verdict)" [size]="16" />
-            {{ verdictLabel(r.verdict) }}
-          </span>
-
-          <dl class="meta">
-            <dt>Тема</dt>
-            <dd>{{ r.emailSubject || '(без тема)' }}</dd>
-            <dt>От</dt>
-            <dd>{{ r.fromAddress || '(неизвестен)' }}</dd>
-          </dl>
-        </div>
-
-        <div class="findings-by-category">
-          @if (groupedFindings().length === 0) {
-            <p class="no-findings">Не са открити индикатори за фишинг.</p>
-          } @else {
-            @for (group of groupedFindings(); track group.category; let i = $index) {
-              <div class="category-group" [style.animation-delay.ms]="100 + i * 90">
-                <button
-                  type="button"
-                  class="category-head"
-                  [class.expanded]="isCategoryExpanded(group.category)"
-                  [attr.aria-expanded]="isCategoryExpanded(group.category)"
-                  (click)="toggleCategory(group.category)"
-                >
-                  <app-icon name="chevron-down" [size]="16" />
-                  <app-icon [name]="group.icon" [size]="16" />
-                  <span>{{ group.label }} · {{ group.findings.length }} {{ findingsWord(group.findings.length) }}</span>
-                  <span class="category-score">+{{ group.score }}</span>
-                </button>
-                @if (isCategoryExpanded(group.category)) {
-                  <ul class="findings">
-                    @for (f of group.findings; track f.ruleId + f.evidence) {
-                      <li class="finding severity-{{ f.severity.toLowerCase() }}">
-                        <div class="finding-head">
-                          <span class="rule-id">{{ f.ruleId }}</span>
-                          <span class="severity">{{ severityLabel(f.severity) }}</span>
-                          <span class="score">+{{ f.score }}</span>
-                        </div>
-                        <p class="description">{{ f.description }}</p>
-                        <p class="evidence">{{ f.evidence }}</p>
-                      </li>
-                    }
-                  </ul>
-                }
-              </div>
-            }
+      <div class="raw-input-actions">
+        <span class="raw-input-hint">
+          Header-ите се разделят от тялото с един празен ред.
+        </span>
+        <button
+          type="button"
+          class="file-button"
+          (click)="clearRaw()"
+          [disabled]="rawInput().length === 0 || loading()"
+        >
+          Изчисти
+        </button>
+        <button
+          type="button"
+          class="primary-button"
+          (click)="analyzeRaw()"
+          [disabled]="rawInput().trim().length === 0 || loading()"
+        >
+          @if (loading()) {
+            <span class="spinner"></span>
           }
-        </div>
-      </section>
-    }
+          {{ loading() ? 'Анализира се…' : 'Анализирай' }}
+        </button>
+      </div>
+    </div>
+
+    <ng-container [ngTemplateOutlet]="analysisResult" />
    } @else if (activeView() === 'statistics') {
     <h2 class="page-title">Статистика</h2>
     <p class="page-subtitle">Обобщение върху всички запазени анализи.</p>
@@ -551,3 +528,83 @@
    </div>
   </main>
 </div>
+
+<!--
+  Докладът е един и същ, независимо дали имейлът е дошъл от файл, от
+  ръчно поставен текст или от историята. Държи се на едно място и се
+  вмъква в съответния изглед, вместо да се дублира в три копия.
+-->
+<ng-template #analysisResult>
+  @if (error()) {
+    <p class="error">{{ error() }}</p>
+  }
+
+  @if (report(); as r) {
+    <section class="dashboard">
+      <div class="summary">
+        <div class="gauge">
+          <svg width="88" height="88">
+            <circle cx="44" cy="44" r="38" class="gauge-track" />
+            <circle
+              cx="44" cy="44" r="38"
+              class="gauge-value verdict-{{ r.verdict.toLowerCase() }}"
+              [style.stroke-dasharray]="gaugeCircumference"
+              [style.stroke-dashoffset]="gaugeOffset()"
+            />
+          </svg>
+          <span class="gauge-score">{{ displayedScore() }}</span>
+        </div>
+
+        <span class="verdict-badge verdict-{{ r.verdict.toLowerCase() }}">
+          <app-icon [name]="verdictIcon(r.verdict)" [size]="16" />
+          {{ verdictLabel(r.verdict) }}
+        </span>
+
+        <dl class="meta">
+          <dt>Тема</dt>
+          <dd>{{ r.emailSubject || '(без тема)' }}</dd>
+          <dt>От</dt>
+          <dd>{{ r.fromAddress || '(неизвестен)' }}</dd>
+        </dl>
+      </div>
+
+      <div class="findings-by-category">
+        @if (groupedFindings().length === 0) {
+          <p class="no-findings">Не са открити индикатори за фишинг.</p>
+        } @else {
+          @for (group of groupedFindings(); track group.category; let i = $index) {
+            <div class="category-group" [style.animation-delay.ms]="100 + i * 90">
+              <button
+                type="button"
+                class="category-head"
+                [class.expanded]="isCategoryExpanded(group.category)"
+                [attr.aria-expanded]="isCategoryExpanded(group.category)"
+                (click)="toggleCategory(group.category)"
+              >
+                <app-icon name="chevron-down" [size]="16" />
+                <app-icon [name]="group.icon" [size]="16" />
+                <span>{{ group.label }} · {{ group.findings.length }} {{ findingsWord(group.findings.length) }}</span>
+                <span class="category-score">+{{ group.score }}</span>
+              </button>
+              @if (isCategoryExpanded(group.category)) {
+                <ul class="findings">
+                  @for (f of group.findings; track f.ruleId + f.evidence) {
+                    <li class="finding severity-{{ f.severity.toLowerCase() }}">
+                      <div class="finding-head">
+                        <span class="rule-id">{{ f.ruleId }}</span>
+                        <span class="severity">{{ severityLabel(f.severity) }}</span>
+                        <span class="score">+{{ f.score }}</span>
+                      </div>
+                      <p class="description">{{ f.description }}</p>
+                      <p class="evidence">{{ f.evidence }}</p>
+                    </li>
+                  }
+                </ul>
+              }
+            </div>
+          }
+        }
+      </div>
+    </section>
+  }
+</ng-template>

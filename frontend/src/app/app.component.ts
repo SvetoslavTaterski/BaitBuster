@@ -3,6 +3,7 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import {
   AnalysisReport, Finding, HistoryDetail, HistoryListItem, ModelInfo, RuleDescription, Statistics
 } from './analysis.model';
+import { NgTemplateOutlet } from '@angular/common';
 import { IconComponent, IconName } from './icon.component';
 
 const API_BASE_URL = 'http://localhost:5289';
@@ -12,7 +13,10 @@ const GAUGE_CIRCUMFERENCE = 2 * Math.PI * GAUGE_RADIUS;
 type Theme = 'light' | 'dark';
 const THEME_STORAGE_KEY = 'baitbuster-theme';
 
-type View = 'analyze' | 'history' | 'statistics' | 'rules' | 'model';
+type View = 'analyze' | 'manual' | 'history' | 'statistics' | 'rules' | 'model';
+
+/** Откъде е дошъл текущо показаният доклад — определя кой изглед има право да го покаже. */
+type ReportSource = 'file' | 'raw' | 'history';
 
 const CATEGORY_ORDER = ['Headers', 'Urls', 'Content', 'Attachments', 'Ml'];
 const CATEGORY_ICONS: Record<string, IconName> = {
@@ -41,7 +45,7 @@ interface FindingGroup {
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [IconComponent],
+  imports: [IconComponent, NgTemplateOutlet],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
@@ -56,7 +60,8 @@ export class AppComponent {
   private animationFrameId: number | null = null;
 
   activeView = signal<View>('analyze');
-  viewingHistoryItem = signal(false);
+  reportSource = signal<ReportSource | null>(null);
+  rawInput = signal('');
   historyItems = signal<HistoryListItem[]>([]);
   historyLoading = signal(false);
   historyError = signal<string | null>(null);
@@ -206,10 +211,30 @@ export class AppComponent {
 
   private setFile(file: File | null): void {
     this.selectedFile.set(file);
+    this.clearReport();
+  }
+
+  /// <summary>Нулира резултата и всичко, което зависи от него.</summary>
+  private clearReport(): void {
     this.error.set(null);
     this.report.set(null);
-    this.viewingHistoryItem.set(false);
+    this.reportSource.set(null);
+    this.expandedCategories.set(new Set());
     this.animateScoreTo(0);
+  }
+
+  /// <summary>Общото за двата вида анализ: показване на резултата и анимацията.</summary>
+  private acceptReport(report: AnalysisReport, source: ReportSource): void {
+    this.report.set(report);
+    this.reportSource.set(source);
+    this.expandedCategories.set(new Set());
+    this.loading.set(false);
+    this.animateScoreTo(report.riskScore);
+  }
+
+  private failAnalysis(err: HttpErrorResponse): void {
+    this.error.set(typeof err.error === 'string' ? err.error : 'Възникна грешка при анализа.');
+    this.loading.set(false);
   }
 
   clearFile(fileInput: HTMLInputElement): void {
@@ -225,33 +250,58 @@ export class AppComponent {
     formData.append('file', file);
 
     this.loading.set(true);
-    this.error.set(null);
-    this.report.set(null);
-    this.animateScoreTo(0);
+    this.clearReport();
 
     this.http.post<AnalysisReport>(`${API_BASE_URL}/api/analysis/upload`, formData).subscribe({
-      next: (report) => {
-        this.report.set(report);
-        this.expandedCategories.set(new Set());
-        this.loading.set(false);
-        this.animateScoreTo(report.riskScore);
-      },
-      error: (err: HttpErrorResponse) => {
-        this.error.set(typeof err.error === 'string' ? err.error : 'Възникна грешка при анализа.');
-        this.loading.set(false);
-      }
+      next: (report) => this.acceptReport(report, 'file'),
+      error: (err: HttpErrorResponse) => this.failAnalysis(err)
     });
   }
 
+  analyzeRaw(): void {
+    const raw = this.rawInput().trim();
+    if (raw.length === 0) return;
+
+    this.loading.set(true);
+    this.clearReport();
+
+    // Endpoint-ът приема суров MIME текст, не JSON. text/plain е измежду
+    // безопасните за CORS типове, така че браузърът не праща preflight заявка.
+    this.http.post<AnalysisReport>(`${API_BASE_URL}/api/analysis/raw`, raw, {
+      headers: { 'Content-Type': 'text/plain' }
+    }).subscribe({
+      next: (report) => this.acceptReport(report, 'raw'),
+      error: (err: HttpErrorResponse) => this.failAnalysis(err)
+    });
+  }
+
+  clearRaw(): void {
+    this.rawInput.set('');
+    this.clearReport();
+  }
+
+  onRawInput(event: Event): void {
+    this.rawInput.set((event.target as HTMLTextAreaElement).value);
+  }
+
   showAnalyze(): void {
-    if (this.viewingHistoryItem()) {
-      this.viewingHistoryItem.set(false);
-      this.selectedFile.set(null);
-      this.error.set(null);
-      this.report.set(null);
-      this.animateScoreTo(0);
-    }
-    this.activeView.set('analyze');
+    this.switchTo('analyze', 'file');
+  }
+
+  showManual(): void {
+    this.switchTo('manual', 'raw');
+  }
+
+  /// <summary>
+  /// Двата изгледа за анализ делят един доклад. При преминаване между тях
+  /// чужд резултат се изчиства — иначе под полето за текст би стоял докладът
+  /// на качен файл и обратно.
+  /// </summary>
+  private switchTo(view: View, ownSource: ReportSource): void {
+    if (this.reportSource() !== null && this.reportSource() !== ownSource)
+      this.clearReport();
+
+    this.activeView.set(view);
   }
 
   showHistory(): void {
@@ -276,10 +326,7 @@ export class AppComponent {
       next: (detail) => {
         this.selectedFile.set(null);
         this.error.set(null);
-        this.report.set(detail);
-        this.expandedCategories.set(new Set());
-        this.animateScoreTo(detail.riskScore);
-        this.viewingHistoryItem.set(true);
+        this.acceptReport(detail, 'history');
         this.activeView.set('analyze');
       },
       error: () => {

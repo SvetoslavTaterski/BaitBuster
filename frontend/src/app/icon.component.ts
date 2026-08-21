@@ -17,7 +17,8 @@ export type IconName =
   | 'cpu'
   | 'chevron-down'
   | 'list-check'
-  | 'chart-pie';
+  | 'chart-pie'
+  | 'pencil';
 
 @Component({
   selector: 'app-icon',
@@ -99,6 +100,10 @@ export type IconName =
         }
         @case ('chevron-down') {
           <polyline points="6,9 12,15 18,9" />
+        }
+        @case ('pencil') {
+          <path d="M4 20h4L20 8a2.8 2.8 0 0 0-4-4L4 16Z" />
+          <line x1="14.5" y1="5.5" x2="18.5" y2="9.5" />
         }
         @case ('chart-pie') {
           <path d="M12 3a9 9 0 1 0 9 9h-9Z" />
