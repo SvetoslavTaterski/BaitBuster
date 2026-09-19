@@ -45,6 +45,7 @@ public sealed class AnalysisController(EmlParser parser, DetectionEngine engine,
     /// <summary>Анализ на ръчно въведено съдържание (суров MIME текст).</summary>
     [HttpPost("raw")]
     [Consumes("text/plain")]
+    [RequestSizeLimit(MaxFileSizeBytes)]
     [ProducesResponseType<AnalysisReport>(StatusCodes.Status200OK)]
     public async Task<ActionResult<AnalysisReport>> AnalyzeRaw()
     {

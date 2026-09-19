@@ -59,11 +59,13 @@ public sealed partial class EmlParser
             }
         }
 
-        // "голи" URL-и в plain text частта
+        // "голи" URL-и в plain text частта. Показваният текст на <a> също се
+        // проверява: при HTML-само имейл plainText е свалено копие на HTML-а,
+        // така че адрес, който е видим текст на линк, би се появил втори път.
         foreach (Match m in UrlRegex().Matches(plainText))
         {
             var url = m.Value;
-            if (!links.Any(l => l.Href == url))
+            if (!links.Any(l => l.Href == url || l.DisplayText == url))
                 links.Add(new EmailLink(url, url));
         }
 

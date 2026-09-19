@@ -1,0 +1,111 @@
+<h2 class="page-title">Статистика</h2>
+<p class="page-subtitle">Обобщение върху всички запазени анализи.</p>
+
+@if (loading()) {
+  <p class="page-subtitle">Зареждане…</p>
+} @else if (error()) {
+  <p class="error">{{ error() }}</p>
+} @else {
+  @if (statistics(); as s) {
+    @if (s.totalAnalyses === 0) {
+      <p class="no-findings muted">
+        Все още няма анализирани имейли, от които да се смята статистика.
+      </p>
+    } @else {
+      <div class="metric-grid">
+        <div class="metric-card">
+          <span class="metric-label">Анализирани имейли</span>
+          <span class="metric-value">{{ s.totalAnalyses }}</span>
+        </div>
+        <div class="metric-card">
+          <span class="metric-label">Среден risk score</span>
+          <span class="metric-value">{{ s.averageRiskScore.toFixed(1) }}</span>
+        </div>
+        <div class="metric-card">
+          <span class="metric-label">Открит фишинг</span>
+          <span class="metric-value danger">{{ s.phishingCount }}</span>
+        </div>
+        <div class="metric-card">
+          <span class="metric-label">Легитимни</span>
+          <span class="metric-value success">{{ s.legitimateCount }}</span>
+        </div>
+      </div>
+
+      <section class="chart-block">
+        <h3 class="chart-title">Разпределение на присъдите</h3>
+        <div class="bar-rows">
+          <div class="bar-row">
+            <span class="bar-label">Фишинг</span>
+            <span class="bar-track">
+              <span class="bar-fill verdict-phishing" [style.width.%]="sharePercent(s.phishingCount)"></span>
+            </span>
+            <span class="bar-value">{{ s.phishingCount }} · {{ sharePercent(s.phishingCount) }}%</span>
+          </div>
+          <div class="bar-row">
+            <span class="bar-label">Подозрителен</span>
+            <span class="bar-track">
+              <span class="bar-fill verdict-suspicious" [style.width.%]="sharePercent(s.suspiciousCount)"></span>
+            </span>
+            <span class="bar-value">{{ s.suspiciousCount }} · {{ sharePercent(s.suspiciousCount) }}%</span>
+          </div>
+          <div class="bar-row">
+            <span class="bar-label">Легитимен</span>
+            <span class="bar-track">
+              <span class="bar-fill verdict-legitimate" [style.width.%]="sharePercent(s.legitimateCount)"></span>
+            </span>
+            <span class="bar-value">{{ s.legitimateCount }} · {{ sharePercent(s.legitimateCount) }}%</span>
+          </div>
+        </div>
+      </section>
+
+      @if (s.findingsByCategory.length > 0) {
+        <section class="chart-block">
+          <h3 class="chart-title">Находки по категория</h3>
+          <div class="bar-rows">
+            @for (category of s.findingsByCategory; track category.name) {
+              <div class="bar-row">
+                <span class="bar-label">{{ categoryLabel(category.name) }}</span>
+                <span class="bar-track">
+                  <span class="bar-fill accent" [style.width.%]="barWidth(category.count, maxCategoryCount())"></span>
+                </span>
+                <span class="bar-value">{{ category.count }}</span>
+              </div>
+            }
+          </div>
+        </section>
+      }
+
+      @if (s.topRules.length > 0) {
+        <section class="chart-block">
+          <h3 class="chart-title">Най-често задействани правила</h3>
+          <div class="bar-rows">
+            @for (rule of s.topRules; track rule.name) {
+              <div class="bar-row">
+                <span class="bar-label mono">{{ rule.name }}</span>
+                <span class="bar-track">
+                  <span class="bar-fill accent" [style.width.%]="barWidth(rule.count, maxRuleCount())"></span>
+                </span>
+                <span class="bar-value">{{ rule.count }}</span>
+              </div>
+            }
+          </div>
+        </section>
+      }
+
+      <section class="chart-block">
+        <h3 class="chart-title">Анализи през последните 7 дни</h3>
+        <div class="day-chart">
+          @for (day of s.lastDays; track day.date) {
+            <div class="day-column">
+              <span class="day-count">{{ day.count }}</span>
+              <span class="day-bar-track">
+                <span class="day-bar" [style.height.%]="barWidth(day.count, maxDailyCount())"></span>
+              </span>
+              <span class="day-label">{{ fmt.day(day.date) }}</span>
+            </div>
+          }
+        </div>
+      </section>
+    }
+  }
+}

@@ -1,0 +1,55 @@
+<h2 class="page-title">Анализ на имейл</h2>
+
+@if (store.historyReport(); as r) {
+  <p class="page-subtitle">Преглед на вече направен анализ.</p>
+
+  <div class="history-banner">
+    <app-icon name="clock" [size]="18" />
+    <div class="history-banner-text">
+      <span class="history-banner-title">Запис от историята</span>
+      <span class="history-banner-sub">Анализиран на {{ fmt.date(r.analyzedAt) }}</span>
+    </div>
+    <button type="button" class="file-button" (click)="store.clear()">Нов анализ</button>
+  </div>
+} @else {
+  <p class="page-subtitle">Качете .eml файл, за да проверите за фишинг индикатори.</p>
+
+  <div
+    class="dropzone"
+    [class.dragging]="isDragging()"
+    (dragover)="onDragOver($event)"
+    (dragleave)="onDragLeave()"
+    (drop)="onDrop($event)"
+  >
+    <app-icon name="upload" [size]="26" />
+    <p class="dropzone-hint">Провлачете .eml файл тук или</p>
+    <div class="dropzone-actions">
+      <label class="file-button">
+        Избери файл
+        <input #fileInput type="file" accept=".eml" (change)="onFileSelected($event)" hidden />
+      </label>
+      <button class="primary-button" (click)="analyze()" [disabled]="!store.selectedFile() || store.loading()">
+        @if (store.loading()) {
+          <span class="spinner"></span>
+        }
+        {{ store.loading() ? 'Анализира се…' : 'Анализирай' }}
+      </button>
+    </div>
+    @if (store.selectedFile(); as file) {
+      <div class="selected-file">
+        <span>{{ file.name }} · {{ fmt.bytes(file.size) }}</span>
+        <button
+          type="button"
+          class="clear-file-button"
+          (click)="clearFile(fileInput)"
+          [disabled]="store.loading()"
+          aria-label="Премахни избрания файл"
+        >
+          <app-icon name="x" [size]="14" />
+        </button>
+      </div>
+    }
+  </div>
+}
+
+<app-report-dashboard />

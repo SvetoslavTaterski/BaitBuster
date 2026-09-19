@@ -1,0 +1,43 @@
+<h2 class="page-title">Ръчен вход</h2>
+<p class="page-subtitle">
+  Поставете суровото съдържание на имейла (header-и и тяло), ако нямате .eml файл.
+</p>
+
+<div class="raw-input-block">
+  <textarea
+    class="raw-input"
+    rows="14"
+    spellcheck="false"
+    placeholder="From: sender@example.com&#10;Subject: Тема на съобщението&#10;&#10;Тяло на имейла…"
+    [value]="store.rawInput()"
+    (input)="onInput($event)"
+    [disabled]="store.loading()"
+  ></textarea>
+
+  <div class="raw-input-actions">
+    <span class="raw-input-hint">
+      Header-ите се разделят от тялото с един празен ред.
+    </span>
+    <button
+      type="button"
+      class="file-button"
+      (click)="clear()"
+      [disabled]="store.rawInput().length === 0 || store.loading()"
+    >
+      Изчисти
+    </button>
+    <button
+      type="button"
+      class="primary-button"
+      (click)="analyze()"
+      [disabled]="store.rawInput().trim().length === 0 || store.loading()"
+    >
+      @if (store.loading()) {
+        <span class="spinner"></span>
+      }
+      {{ store.loading() ? 'Анализира се…' : 'Анализирай' }}
+    </button>
+  </div>
+</div>
+
+<app-report-dashboard />

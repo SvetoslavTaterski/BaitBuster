@@ -1,0 +1,40 @@
+<h2 class="page-title">Детекционни правила</h2>
+<p class="page-subtitle">
+  Всяко правило проверява различен аспект на имейла и добавя точки към общия risk score.
+</p>
+
+@if (loading()) {
+  <p class="page-subtitle">Зареждане…</p>
+} @else if (error()) {
+  <p class="error">{{ error() }}</p>
+} @else {
+  <ul class="rule-list">
+    @for (rule of rules(); track rule.ruleId) {
+      <li class="rule-card">
+        <div class="rule-head">
+          <span class="rule-card-id">{{ rule.ruleId }}</span>
+          <span class="rule-name">{{ rule.name }}</span>
+          <span class="rule-max-score">до +{{ rule.maxScore }}</span>
+        </div>
+        <p class="rule-description">{{ rule.description }}</p>
+        <span class="rule-category">
+          <app-icon [name]="categoryIcon(rule.category)" [size]="14" />
+          {{ categoryLabel(rule.category) }}
+        </span>
+      </li>
+    }
+  </ul>
+
+  @if (thresholds(); as t) {
+    <div class="model-details">
+      <dl class="model-facts">
+        <dt>Праг за „Фишинг"</dt>
+        <dd>risk score {{ t.phishing }} и нагоре</dd>
+        <dt>Праг за „Подозрителен"</dt>
+        <dd>risk score между {{ t.suspicious }} и {{ t.phishing - 1 }}</dd>
+        <dt>Максимален score</dt>
+        <dd>{{ t.maxScore }} (сумата се ограничава дотук)</dd>
+      </dl>
+    </div>
+  }
+}

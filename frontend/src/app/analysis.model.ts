@@ -62,6 +62,17 @@ export interface RuleDescription {
   maxScore: number;
 }
 
+export interface VerdictThresholds {
+  suspicious: number;
+  phishing: number;
+  maxScore: number;
+}
+
+export interface RulesResponse {
+  rules: RuleDescription[];
+  thresholds: VerdictThresholds;
+}
+
 export interface ModelMetrics {
   accuracy: number;
   precision: number;

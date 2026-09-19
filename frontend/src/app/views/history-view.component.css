@@ -1,0 +1,58 @@
+:host {
+  display: contents;
+}
+
+.history-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.history-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-left: 3px solid transparent;
+  border-radius: 0 8px 8px 0;
+  padding: 12px 16px;
+  cursor: pointer;
+  opacity: 0.92;
+  transition: opacity 0.15s;
+}
+
+.history-item:hover {
+  opacity: 1;
+}
+
+.history-item.verdict-phishing { border-left-color: var(--border-danger); }
+.history-item.verdict-suspicious { border-left-color: var(--border-warning); }
+.history-item.verdict-legitimate { border-left-color: var(--border-success); }
+
+.history-item-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.history-subject {
+  margin: 0 0 2px;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.history-meta {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.history-score {
+  font-size: 16px;
+  font-weight: 700;
+  flex-shrink: 0;
+}

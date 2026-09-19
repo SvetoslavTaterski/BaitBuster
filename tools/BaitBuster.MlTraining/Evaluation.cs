@@ -73,6 +73,49 @@ internal static class Evaluation
             .ToList();
     }
 
+    /// <summary>
+    /// AUC по метода на Ман–Уитни: вероятността случайно избран фишинг имейл
+    /// да получи по-висок резултат от случайно избран легитимен. Смята се тук,
+    /// защото ML.NET предлага готово AUC само за двоичните си алгоритми, а
+    /// Naive Bayes минава по многокласовия път.
+    /// </summary>
+    public static double RocAuc(IEnumerable<Scored> scored)
+    {
+        var ranked = scored.OrderBy(s => s.Probability).ToList();
+
+        var positives = ranked.Count(s => s.Row.IsPhishing);
+        var negatives = ranked.Count - positives;
+
+        // С един-единствен клас в извадката AUC е неопределено.
+        if (positives == 0 || negatives == 0)
+            return 0;
+
+        // Равните резултати получават среден ранг, иначе стойността би
+        // зависела от случайната подредба между тях.
+        var ranks = new double[ranked.Count];
+        var i = 0;
+
+        while (i < ranked.Count)
+        {
+            var j = i;
+            while (j + 1 < ranked.Count && ranked[j + 1].Probability == ranked[i].Probability)
+                j++;
+
+            var averageRank = (i + j) / 2.0 + 1;
+            for (var k = i; k <= j; k++)
+                ranks[k] = averageRank;
+
+            i = j + 1;
+        }
+
+        var positiveRankSum = 0.0;
+        for (var k = 0; k < ranked.Count; k++)
+            if (ranked[k].Row.IsPhishing)
+                positiveRankSum += ranks[k];
+
+        return (positiveRankSum - positives * (positives + 1) / 2.0) / ((double)positives * negatives);
+    }
+
     public static double StdDev(IReadOnlyCollection<double> values)
     {
         if (values.Count < 2)

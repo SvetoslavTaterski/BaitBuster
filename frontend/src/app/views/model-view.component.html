@@ -1,0 +1,192 @@
+<h2 class="page-title">ML модел</h2>
+<p class="page-subtitle">Обучен класификатор, работещ като четвърто детекционно правило.</p>
+
+@if (loading()) {
+  <p class="page-subtitle">Зареждане…</p>
+} @else if (error()) {
+  <p class="error">{{ error() }}</p>
+} @else {
+  @if (info(); as m) {
+    <div class="metric-grid">
+      <div class="metric-card">
+        <span class="metric-label">Accuracy</span>
+        <span class="metric-value">{{ fmt.percent(m.metrics.accuracy) }}</span>
+        <span class="metric-hint">Общ дял верни отговори</span>
+      </div>
+      <div class="metric-card">
+        <span class="metric-label">Precision</span>
+        <span class="metric-value">{{ fmt.percent(m.metrics.precision) }}</span>
+        <span class="metric-hint">От маркираните като фишинг, колко наистина са</span>
+      </div>
+      <div class="metric-card">
+        <span class="metric-label">Recall</span>
+        <span class="metric-value">{{ fmt.percent(m.metrics.recall) }}</span>
+        <span class="metric-hint">От истинските фишинг, колко е хванал</span>
+      </div>
+      <div class="metric-card">
+        <span class="metric-label">F1 score</span>
+        <span class="metric-value">{{ fmt.percent(m.metrics.f1Score) }}</span>
+        <span class="metric-hint">Баланс между precision и recall</span>
+      </div>
+    </div>
+
+    <div class="model-details">
+      <dl class="model-facts">
+        <dt>Алгоритъм</dt>
+        <dd>{{ m.algorithm }}</dd>
+        <dt>Обучен на</dt>
+        <dd>{{ fmt.date(m.trainedAt) }}</dd>
+        <dt>Тренировъчни примери</dt>
+        <dd>{{ m.trainingExamples }}</dd>
+        <dt>Тестови примери</dt>
+        <dd>{{ m.testExamples }}</dd>
+        <dt>Състав на данните</dt>
+        <dd>{{ m.phishingExamples }} фишинг · {{ m.legitimateExamples }} легитимни</dd>
+        @if (m.dataset) {
+          <dt>Корпус-източници</dt>
+          <dd>{{ m.dataset }}</dd>
+        }
+      </dl>
+    </div>
+
+    @if (m.confusion; as cm) {
+      <h3 class="section-heading">Разпределение на решенията</h3>
+      <p class="section-note">
+        Върху {{ m.testExamples }} имейла, отделени преди обучението и невиждани от модела.
+        Процентите отгоре скриват точно тези четири числа.
+      </p>
+      <div class="confusion-grid">
+        <div class="confusion-cell is-correct">
+          <span class="confusion-value">{{ cm.truePositives }}</span>
+          <span class="confusion-label">вярно разпознат фишинг</span>
+        </div>
+        <div class="confusion-cell is-error">
+          <span class="confusion-value">{{ cm.falseNegatives }}</span>
+          <span class="confusion-label">пропуснат фишинг</span>
+        </div>
+        <div class="confusion-cell is-correct">
+          <span class="confusion-value">{{ cm.trueNegatives }}</span>
+          <span class="confusion-label">вярно разпозната легитимна поща</span>
+        </div>
+        <div class="confusion-cell is-error">
+          <span class="confusion-value">{{ cm.falsePositives }}</span>
+          <span class="confusion-label">легитимна, обявена за фишинг</span>
+        </div>
+      </div>
+    }
+
+    @if (m.crossValidation; as cv) {
+      <h3 class="section-heading">Кръстосана проверка</h3>
+      <p class="section-note">
+        Корпусът е разделен на {{ cv.folds }} дяла и обучението е повторено {{ cv.folds }} пъти,
+        всеки път с различен дял за тест. Отклонението показва колко се клати оценката
+        при друго разделяне на същите данни — малко отклонение значи, че резултатът не е късмет.
+      </p>
+      <div class="metric-grid">
+        <div class="metric-card">
+          <span class="metric-label">Accuracy</span>
+          <span class="metric-value">{{ fmt.percent(cv.accuracyMean) }}</span>
+          <span class="metric-hint">± {{ fmt.percent(cv.accuracyStdDev) }}</span>
+        </div>
+        <div class="metric-card">
+          <span class="metric-label">F1 score</span>
+          <span class="metric-value">{{ fmt.percent(cv.f1Mean) }}</span>
+          <span class="metric-hint">± {{ fmt.percent(cv.f1StdDev) }}</span>
+        </div>
+        <div class="metric-card">
+          <span class="metric-label">AUC</span>
+          <span class="metric-value">{{ fmt.percent(cv.aucMean) }}</span>
+          <span class="metric-hint">± {{ fmt.percent(cv.aucStdDev) }}</span>
+        </div>
+      </div>
+    }
+
+    @if (m.candidates; as candidates) {
+      <h3 class="section-heading">Сравнени алгоритми</h3>
+      <p class="section-note">
+        Всички са обучени и оценени върху едно и също разделяне на данните.
+        Избран е този с най-висок F1.
+      </p>
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Алгоритъм</th>
+              <th>Accuracy</th>
+              <th>Precision</th>
+              <th>Recall</th>
+              <th>F1</th>
+              <th>AUC</th>
+              <th>Обучение</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (candidate of candidates; track candidate.algorithm) {
+              <tr [class.is-selected]="candidate.selected">
+                <td>
+                  {{ candidate.algorithm }}
+                  @if (candidate.selected) {
+                    <span class="chip">избран</span>
+                  }
+                </td>
+                <td>{{ fmt.percent(candidate.metrics.accuracy) }}</td>
+                <td>{{ fmt.percent(candidate.metrics.precision) }}</td>
+                <td>{{ fmt.percent(candidate.metrics.recall) }}</td>
+                <td>{{ fmt.percent(candidate.metrics.f1Score) }}</td>
+                <td>{{ fmt.percent(candidate.metrics.areaUnderRocCurve) }}</td>
+                <td>{{ fmt.seconds(candidate.trainingSeconds) }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
+    @if (m.perSource; as perSource) {
+      <h3 class="section-heading">По корпус-източник</h3>
+      <p class="section-note">
+        Тестовата извадка, разбита по корпуса, от който идват имейлите.
+        Близки стойности значат, че моделът е научил езика на фишинга,
+        а не особеностите на един конкретен корпус.
+      </p>
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Източник</th>
+              <th>Примери</th>
+              <th>Accuracy</th>
+              <th>Уловен фишинг</th>
+              <th>Лъжлива тревога</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (source of perSource; track source.source) {
+              <tr>
+                <td>{{ source.source }}</td>
+                <td>{{ source.testExamples }}</td>
+                <td>{{ fmt.percent(source.accuracy) }}</td>
+                <td>{{ fmt.rate(source.recall) }}</td>
+                <td>{{ fmt.rate(source.falsePositiveRate) }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
+    @if (smallDataset()) {
+      <div class="model-warning">
+        <app-icon name="alert-triangle" [size]="18" />
+        <div>
+          <p class="model-warning-title">Ограничена извадка</p>
+          <p class="model-warning-text">
+            Моделът е обучен само върху {{ m.totalExamples }} синтетични примера,
+            затова метриките са оптимистични и не отразяват реална употреба.
+            За достоверни резултати е нужен публичен датасет с реални имейли.
+          </p>
+        </div>
+      </div>
+    }
+  }
+}

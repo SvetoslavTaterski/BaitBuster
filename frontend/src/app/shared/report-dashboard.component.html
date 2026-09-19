@@ -1,0 +1,72 @@
+@if (store.error(); as error) {
+  <p class="error">{{ error }}</p>
+}
+
+@if (store.report(); as r) {
+  <section class="dashboard">
+    <div class="summary">
+      <div class="gauge">
+        <svg width="88" height="88">
+          <circle cx="44" cy="44" r="38" class="gauge-track" />
+          <circle
+            cx="44" cy="44" r="38"
+            class="gauge-value verdict-{{ r.verdict.toLowerCase() }}"
+            [style.stroke-dasharray]="gaugeCircumference"
+            [style.stroke-dashoffset]="store.gaugeOffset()"
+          />
+        </svg>
+        <span class="gauge-score">{{ store.displayedScore() }}</span>
+      </div>
+
+      <span class="verdict-badge verdict-{{ r.verdict.toLowerCase() }}">
+        <app-icon [name]="verdictIcon(r.verdict)" [size]="16" />
+        {{ verdictLabel(r.verdict) }}
+      </span>
+
+      <dl class="meta">
+        <dt>Тема</dt>
+        <dd>{{ r.emailSubject || '(без тема)' }}</dd>
+        <dt>От</dt>
+        <dd>{{ r.fromAddress || '(неизвестен)' }}</dd>
+      </dl>
+    </div>
+
+    <div class="findings-by-category">
+      @if (store.groupedFindings().length === 0) {
+        <p class="no-findings">Не са открити индикатори за фишинг.</p>
+      } @else {
+        @for (group of store.groupedFindings(); track group.category; let i = $index) {
+          <div class="category-group" [style.animation-delay.ms]="100 + i * 90">
+            <button
+              type="button"
+              class="category-head"
+              [class.expanded]="store.isExpanded(group.category)"
+              [attr.aria-expanded]="store.isExpanded(group.category)"
+              (click)="store.toggleCategory(group.category)"
+            >
+              <app-icon name="chevron-down" [size]="16" />
+              <app-icon [name]="group.icon" [size]="16" />
+              <span>{{ group.label }} · {{ group.findings.length }} {{ fmt.findingsWord(group.findings.length) }}</span>
+              <span class="category-score">+{{ group.score }}</span>
+            </button>
+            @if (store.isExpanded(group.category)) {
+              <ul class="findings">
+                @for (f of group.findings; track f.ruleId + f.evidence) {
+                  <li class="finding severity-{{ f.severity.toLowerCase() }}">
+                    <div class="finding-head">
+                      <span class="rule-id">{{ f.ruleId }}</span>
+                      <span class="severity">{{ severityLabel(f.severity) }}</span>
+                      <span class="score">+{{ f.score }}</span>
+                    </div>
+                    <p class="description">{{ f.description }}</p>
+                    <p class="evidence">{{ f.evidence }}</p>
+                  </li>
+                }
+              </ul>
+            }
+          </div>
+        }
+      }
+    </div>
+  </section>
+}

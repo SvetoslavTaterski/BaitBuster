@@ -1,0 +1,26 @@
+<h2 class="page-title">История на анализите</h2>
+<p class="page-subtitle">Последните анализирани имейли.</p>
+
+@if (loading()) {
+  <p class="page-subtitle">Зареждане…</p>
+} @else if (error()) {
+  <p class="error">{{ error() }}</p>
+} @else if (items().length === 0) {
+  <p class="no-findings muted">Все още няма анализирани имейли.</p>
+} @else {
+  <ul class="history-list">
+    @for (item of items(); track item.id) {
+      <li class="history-item verdict-{{ item.verdict.toLowerCase() }}" (click)="open(item.id)">
+        <app-icon [name]="verdictIcon(item.verdict)" [size]="18" />
+        <div class="history-item-main">
+          <p class="history-subject">{{ item.emailSubject || '(без тема)' }}</p>
+          <p class="history-meta">
+            {{ item.fromAddress }} · {{ item.findingsCount }} {{ fmt.findingsWord(item.findingsCount) }} · {{ fmt.date(item.analyzedAt) }}
+          </p>
+        </div>
+        <span class="history-score">{{ item.riskScore }}</span>
+        <app-confirm-button label="Изтрий записа" (confirmed)="remove(item.id)" />
+      </li>
+    }
+  </ul>
+}

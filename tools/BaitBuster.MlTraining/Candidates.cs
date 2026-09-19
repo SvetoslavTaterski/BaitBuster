@@ -16,12 +16,18 @@ internal static class Candidates
     ///   LbfgsLogisticRegression  линеен, квази-нютонова оптимизация
     ///   AveragedPerceptron       онлайн алгоритъм, устойчив на много признаци
     ///   LinearSvm                максимизира отстоянието между класовете
-    ///   FastTree                 нелинеен, ансамбъл от решаващи дървета
+    ///   FastTree                 ансамбъл от дървета чрез бустинг
+    ///   FastForest               ансамбъл от дървета чрез багинг (Random Forest)
     ///
-    /// Perceptron и SVM връщат само суров резултат (Score), не вероятност.
-    /// MlClassifierRule обаче праща вероятност в доклада, затова към тях се
-    /// добавя калибрация по Плат — иначе изборът на такъв модел би счупил
-    /// правилото.
+    /// FastTree и FastForest са различни въпреки общата основа: при бустинга
+    /// дърветата се строят последователно и всяко коригира грешките на
+    /// предходните, а при багинга — независимо върху различни подизвадки, след
+    /// което гласуват. Затова FastTree не може да мине за Random Forest.
+    ///
+    /// Perceptron, SVM и FastForest връщат само суров резултат (Score), не
+    /// вероятност. MlClassifierRule обаче праща вероятност в доклада, затова
+    /// към тях се добавя калибрация по Плат — иначе изборът на такъв модел би
+    /// счупил правилото.
     /// </summary>
     public static Candidate[] Build(MLContext ml, string labelColumn, string featureColumn)
     {
@@ -47,6 +53,12 @@ internal static class Candidates
             new("FastTree",
                 ml.BinaryClassification.Trainers.FastTree(
                     labelColumn, featureColumn, numberOfLeaves: 20, numberOfTrees: 100)),
+
+            new("FastForest",
+                ml.BinaryClassification.Trainers.FastForest(
+                    labelColumnName: labelColumn, featureColumnName: featureColumn,
+                    numberOfLeaves: 20, numberOfTrees: 100)
+                  .Append(calibrator)),
         ];
     }
 }

@@ -107,10 +107,30 @@ foreach (var candidate in Candidates.Build(ml, nameof(EmailData.Label), "Feature
 
 // Изборът е по F1, защото и двете грешки тежат: пропуснатият фишинг е риск
 // за потребителя, а излишното предупреждение го учи да ги пренебрегва.
+// Прави се преди Naive Bayes, защото той не може да бъде избран — виж по-долу.
 var best = comparison.MaxBy(r => r.Metrics.F1Score)!;
+
+// Naive Bayes се оценява отделно: ML.NET го предлага само като многокласов
+// алгоритъм и не връща калибрирана вероятност. Влиза в таблицата заради
+// сравнението в записката, но остава извън избора на модел за приложението.
+var naiveBayes = NaiveBayes.Evaluate(
+    ml, trainFeatures, testFeatures, test, nameof(EmailData.Label), "Features");
+
+comparison.Add(naiveBayes);
+
+Console.WriteLine($"{naiveBayes.Algorithm,-26}{naiveBayes.Metrics.Accuracy,10:P2}" +
+                  $"{naiveBayes.Metrics.Precision,11:P2}{naiveBayes.Metrics.Recall,9:P2}" +
+                  $"{naiveBayes.Metrics.F1Score,9:P2}{naiveBayes.Metrics.AreaUnderRocCurve,9:P2}" +
+                  $"{naiveBayes.TrainingSeconds,9:N1}с");
 
 Console.WriteLine();
 Console.WriteLine($"Избран алгоритъм: {best.Algorithm} (най-висок F1)");
+
+if (naiveBayes.Metrics.F1Score > best.Metrics.F1Score)
+{
+    Console.WriteLine($"Забележка: {naiveBayes.Algorithm} има по-висок F1 ({naiveBayes.Metrics.F1Score:P2}), " +
+                      "но не дава вероятност и затова не се използва от приложението.");
+}
 
 // ── 3. Окончателен модел ────────────────────────────────────────────────────
 

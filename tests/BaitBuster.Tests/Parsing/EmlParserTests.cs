@@ -83,6 +83,23 @@ public class EmlParserTests
     }
 
     [Fact]
+    public void DisplayedUrlOfAnchorIsNotAddedAgainAsBareLink()
+    {
+        // При HTML-само имейл текстовата част е свалено копие на HTML-а, в което
+        // показваният адрес на линка стои като обикновен текст. Без дедупликация
+        // по показван текст той би се появил втори път — като „гол" линк.
+        var email = Parse("""
+            From: sender@example.com
+            Subject: Тест
+            Content-Type: text/html; charset="UTF-8"
+
+            <html><body><a href="http://192.168.5.23/login">https://www.paypal.com/login</a></body></html>
+            """);
+
+        email.Links.Should().ContainSingle();
+    }
+
+    [Fact]
     public void ExtractsBareUrlsFromPlainTextPart()
     {
         var email = Parse("""

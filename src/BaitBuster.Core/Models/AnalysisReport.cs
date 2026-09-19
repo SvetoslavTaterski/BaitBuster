@@ -42,13 +42,22 @@ public sealed class AnalysisReport
 
     public List<Finding> Findings { get; } = [];
 
+    /// <summary>Таванът на risk score-а; сумата от приносите се ограничава дотук.</summary>
+    public const int MaxScore = 100;
+
+    /// <summary>От този score нагоре имейлът е „фишинг".</summary>
+    public const int PhishingThreshold = 60;
+
+    /// <summary>От този score нагоре (до <see cref="PhishingThreshold"/>) — „подозрителен".</summary>
+    public const int SuspiciousThreshold = 30;
+
     /// <summary>Общ risk score 0–100 (сума от приносите, ограничена до 100).</summary>
-    public int RiskScore => Math.Min(100, Findings.Sum(f => f.Score));
+    public int RiskScore => Math.Min(MaxScore, Findings.Sum(f => f.Score));
 
     public Verdict Verdict => RiskScore switch
     {
-        >= 60 => Verdict.Phishing,
-        >= 30 => Verdict.Suspicious,
+        >= PhishingThreshold => Verdict.Phishing,
+        >= SuspiciousThreshold => Verdict.Suspicious,
         _ => Verdict.Legitimate
     };
 }

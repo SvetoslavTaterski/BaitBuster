@@ -1,0 +1,222 @@
+/* Елементите влизат директно в колоната на страницата, за да делят
+   нейния вертикален ритъм (gap) с останалото съдържание. */
+:host {
+  display: contents;
+}
+
+.dashboard {
+  background: var(--surface-1);
+  border-radius: 12px;
+  padding: 1.25rem;
+  display: grid;
+  grid-template-columns: minmax(0, 190px) minmax(0, 1fr);
+  gap: 20px;
+  animation: reveal-up 0.4s ease both;
+}
+
+@keyframes reveal-up {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.summary {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  border-right: 1px solid var(--border);
+  padding-right: 16px;
+}
+
+.gauge {
+  position: relative;
+  width: 88px;
+  height: 88px;
+}
+
+.gauge svg {
+  transform: rotate(-90deg);
+}
+
+.gauge-track {
+  fill: none;
+  stroke: var(--border);
+  stroke-width: 8;
+}
+
+.gauge-value {
+  fill: none;
+  stroke-width: 8;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.4s ease;
+}
+
+.gauge-score {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.verdict-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: var(--radius);
+}
+
+.meta {
+  text-align: center;
+  width: 100%;
+  margin: 0;
+}
+
+.meta dt {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin: 8px 0 0;
+}
+
+.meta dt:first-child {
+  margin-top: 0;
+}
+
+.meta dd {
+  margin: 2px 0 0;
+  font-size: 13px;
+  word-break: break-word;
+}
+
+.findings-by-category {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.category-group {
+  opacity: 0;
+  animation: reveal-up 0.35s ease both;
+}
+
+.category-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  border-radius: var(--radius);
+  background: var(--surface-2);
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--text-secondary);
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.category-head:hover {
+  background: var(--border);
+  color: var(--text-primary);
+}
+
+.category-head.expanded {
+  margin-bottom: 8px;
+  color: var(--text-primary);
+}
+
+/* Стрелката сочи надолу в свито състояние и се завърта при отваряне. */
+.category-head app-icon:first-child {
+  display: inline-flex;
+  transition: transform 0.2s ease;
+}
+
+.category-head.expanded app-icon:first-child {
+  transform: rotate(180deg);
+}
+
+.category-score {
+  margin-left: auto;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.findings {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.finding {
+  border-left: 3px solid var(--border-strong);
+  background: var(--surface-2);
+  padding: 0.6rem 0.85rem;
+  border-radius: 0 6px 6px 0;
+}
+
+.finding.severity-high { border-left-color: var(--border-danger); }
+.finding.severity-medium { border-left-color: var(--border-warning); }
+.finding.severity-low { border-left-color: var(--fill-accent); }
+
+.finding-head {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: 3px;
+}
+
+.rule-id {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.score {
+  margin-left: auto;
+  font-weight: 600;
+}
+
+.description {
+  margin: 0 0 3px;
+  font-size: 14px;
+}
+
+.evidence {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-secondary);
+  word-break: break-all;
+}
+
+@media (max-width: 560px) {
+  .dashboard {
+    grid-template-columns: 1fr;
+  }
+
+  .summary {
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    padding-right: 0;
+    padding-bottom: 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dashboard, .category-group, .gauge-value, .category-head app-icon:first-child {
+    animation: none !important;
+    transition: none !important;
+  }
+}
