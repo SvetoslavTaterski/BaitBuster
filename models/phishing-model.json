@@ -1,5 +1,5 @@
 {
-  "TrainedAt": "2026-08-20T10:52:23.3261032+00:00",
+  "TrainedAt": "2026-10-05T17:11:29.8473094+00:00",
   "Algorithm": "AveragedPerceptron",
   "TotalExamples": 77141,
   "TrainingExamples": 61711,
@@ -7,26 +7,26 @@
   "PhishingExamples": 37973,
   "LegitimateExamples": 39168,
   "Metrics": {
-    "Accuracy": 0.9871030460142579,
-    "Precision": 0.9856861457649376,
-    "Recall": 0.9881516587677726,
-    "F1Score": 0.9869173624350799,
-    "AreaUnderRocCurve": 0.9988645885806096
+    "Accuracy": 0.9873622812702527,
+    "Precision": 0.9854388036206218,
+    "Recall": 0.9889415481832543,
+    "F1Score": 0.9871870687955845,
+    "AreaUnderRocCurve": 0.9988633618354957
   },
   "Confusion": {
-    "TruePositives": 7506,
-    "FalsePositives": 109,
-    "TrueNegatives": 7725,
-    "FalseNegatives": 90
+    "TruePositives": 7512,
+    "FalsePositives": 111,
+    "TrueNegatives": 7723,
+    "FalseNegatives": 84
   },
   "CrossValidation": {
     "Folds": 5,
-    "AccuracyMean": 0.986556045788466,
-    "AccuracyStdDev": 0.0005180545561941532,
-    "F1Mean": 0.9863577590671471,
-    "F1StdDev": 0.00046882164224005884,
-    "AucMean": 0.9988641307761027,
-    "AucStdDev": 0.00018559849279099508
+    "AccuracyMean": 0.9864779873631893,
+    "AccuracyStdDev": 0.0007564750493359769,
+    "F1Mean": 0.9862798427028535,
+    "F1StdDev": 0.0006908239877826314,
+    "AucMean": 0.998859126549832,
+    "AucStdDev": 0.00018904039240374315
   },
   "Candidates": [
     {
@@ -38,7 +38,7 @@
         "F1Score": 0.987386677177769,
         "AreaUnderRocCurve": 0.9988686049105028
       },
-      "TrainingSeconds": 3.7967167,
+      "TrainingSeconds": 2.9857511,
       "Selected": true
     },
     {
@@ -50,7 +50,7 @@
         "F1Score": 0.9811444284404871,
         "AreaUnderRocCurve": 0.9983431714930516
       },
-      "TrainingSeconds": 101.7866982,
+      "TrainingSeconds": 103.3949517,
       "Selected": false
     },
     {
@@ -62,19 +62,19 @@
         "F1Score": 0.9671712207587969,
         "AreaUnderRocCurve": 0.994849989574347
       },
-      "TrainingSeconds": 28.206486,
+      "TrainingSeconds": 22.5404994,
       "Selected": false
     },
     {
       "Algorithm": "SdcaLogisticRegression",
       "Metrics": {
-        "Accuracy": 0.9644847699287104,
-        "Precision": 0.9592129267657024,
-        "Recall": 0.9690626645602949,
-        "F1Score": 0.964112639161755,
-        "AreaUnderRocCurve": 0.993982865630877
+        "Accuracy": 0.9648736228127025,
+        "Precision": 0.9597236704900939,
+        "Recall": 0.9693259610321222,
+        "F1Score": 0.9645009169504848,
+        "AreaUnderRocCurve": 0.9940394639533888
       },
-      "TrainingSeconds": 5.5395842,
+      "TrainingSeconds": 4.8833857,
       "Selected": false
     },
     {
@@ -86,7 +86,31 @@
         "F1Score": 0.9504542233103537,
         "AreaUnderRocCurve": 0.9893032447374651
       },
-      "TrainingSeconds": 0.3941835,
+      "TrainingSeconds": 0.2660742,
+      "Selected": false
+    },
+    {
+      "Algorithm": "FastForest",
+      "Metrics": {
+        "Accuracy": 0.8896305897602074,
+        "Precision": 0.8768384703926333,
+        "Recall": 0.9025803054239073,
+        "F1Score": 0.8895231916963996,
+        "AreaUnderRocCurve": 0.9563523332288751
+      },
+      "TrainingSeconds": 100.3006238,
+      "Selected": false
+    },
+    {
+      "Algorithm": "NaiveBayes",
+      "Metrics": {
+        "Accuracy": 0.8626053143227479,
+        "Precision": 0.794345302085573,
+        "Recall": 0.9727488151658767,
+        "F1Score": 0.8745413658421115,
+        "AreaUnderRocCurve": 0.706925500475036
+      },
+      "TrainingSeconds": 0.5943288,
       "Selected": false
     }
   ],
@@ -95,28 +119,28 @@
       "Source": "CEAS_08",
       "TestExamples": 6866,
       "Accuracy": 0.992572094378095,
-      "Recall": 0.9947414548641542,
-      "FalsePositiveRate": 0.009584664536741214
+      "Recall": 0.9950335962605902,
+      "FalsePositiveRate": 0.009875108916642464
     },
     {
       "Source": "Enron",
       "TestExamples": 5881,
-      "Accuracy": 0.9836762455364734,
-      "Recall": 0.9881635581061693,
+      "Accuracy": 0.9841863628634586,
+      "Recall": 0.9892395982783357,
       "FalsePositiveRate": 0.020368574199806012
     },
     {
       "Source": "SpamAssassin",
       "TestExamples": 1152,
       "Accuracy": 0.9739583333333334,
-      "Recall": 0.9311377245508982,
-      "FalsePositiveRate": 0.008557457212713936
+      "Recall": 0.9341317365269461,
+      "FalsePositiveRate": 0.009779951100244499
     },
     {
       "Source": "Nigerian_Fraud",
       "TestExamples": 651,
-      "Accuracy": 0.9953917050691244,
-      "Recall": 0.9953917050691244,
+      "Accuracy": 0.9969278033794163,
+      "Recall": 0.9969278033794163,
       "FalsePositiveRate": null
     },
     {
