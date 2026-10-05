@@ -138,6 +138,10 @@
   overflow-y: auto;
   display: flex;
   justify-content: center;
+  /* Без това .content-inner се разтяга до височината на прозореца (stretch),
+     а flex елементите с overflow (напр. .table-scroll) се свиват до 0, за да
+     се събере съдържанието вътре — вместо .content да скролира. */
+  align-items: flex-start;
 }
 
 .content-inner {
